@@ -1,0 +1,133 @@
+{
+  "id": "24588035-0834-4bae-b97a-1832300881c8",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.reunion_submissions": {
+      "name": "reunion_submissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mobile_number": {
+          "name": "mobile_number",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "preferred_date": {
+          "name": "preferred_date",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "custom_date": {
+          "name": "custom_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_food": {
+          "name": "preferred_food",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "custom_food": {
+          "name": "custom_food",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "meal_schedule": {
+          "name": "meal_schedule",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "preferred_gift": {
+          "name": "preferred_gift",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "custom_gift": {
+          "name": "custom_gift",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_activities": {
+          "name": "preferred_activities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activities_to_avoid": {
+          "name": "activities_to_avoid",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "additional_suggestions": {
+          "name": "additional_suggestions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "reunion_submissions_mobile_number_unique": {
+          "name": "reunion_submissions_mobile_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "mobile_number"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

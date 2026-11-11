@@ -128,8 +128,8 @@ export default function PhotoGallery() {
           }}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             selectedFilter === "all"
-              ? "bg-amber-500 text-slate-950 shadow-sm"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+              ? "bg-amber-500 text-slate-950 font-semibold shadow-sm"
+              : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
           }`}
         >
           সকল ছবি ({GALLERY_ITEMS.length})
@@ -142,8 +142,8 @@ export default function PhotoGallery() {
           }}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             selectedFilter === "campus"
-              ? "bg-amber-500 text-slate-950 shadow-sm"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+              ? "bg-amber-500 text-slate-950 font-semibold shadow-sm"
+              : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
           }`}
         >
           আমাদের ক্যাম্পাস (৩)
@@ -156,8 +156,8 @@ export default function PhotoGallery() {
           }}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             selectedFilter === "memories"
-              ? "bg-amber-500 text-slate-950 shadow-sm"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+              ? "bg-amber-500 text-slate-950 font-semibold shadow-sm"
+              : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
           }`}
         >
           বন্ধুদের স্মৃতি (৪)
@@ -170,9 +170,9 @@ export default function PhotoGallery() {
           <div
             key={img.id}
             onClick={() => setActivePhotoIndex(idx)}
-            className="group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-amber-400 dark:hover:border-amber-500/50 transition-all flex flex-col"
+            className="group cursor-pointer bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col"
           >
-            <div className="relative h-60 sm:h-64 w-full bg-slate-100 dark:bg-slate-950 overflow-hidden">
+            <div className="relative h-60 sm:h-64 w-full bg-slate-100 overflow-hidden">
               <Image
                 src={img.src}
                 alt={img.title}
@@ -180,10 +180,10 @@ export default function PhotoGallery() {
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition-colors" />
+              <div className="absolute inset-0 bg-slate-950/10 group-hover:bg-transparent transition-colors" />
 
               {/* Category Badge */}
-              <span className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-black/60 backdrop-blur-sm text-white border border-white/10">
+              <span className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white/90 backdrop-blur-sm text-slate-800 border border-slate-200 shadow-sm">
                 {img.categoryLabel}
               </span>
 
@@ -193,16 +193,16 @@ export default function PhotoGallery() {
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between border-t border-slate-100 dark:border-slate-800">
+            <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between border-t border-slate-100">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
                   {img.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                   {img.caption}
                 </p>
               </div>
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-3 flex items-center gap-1">
+              <p className="text-[11px] text-amber-700 font-semibold mt-3 flex items-center gap-1">
                 <span>বড় করে দেখতে ক্লিক করুন</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </p>
@@ -216,27 +216,27 @@ export default function PhotoGallery() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
           onClick={() => setActivePhotoIndex(null)}
         >
           <div
-            className="relative max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            className="relative max-w-4xl w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between text-white">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between text-slate-900 bg-white">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-800 border border-amber-500/30">
                   {filteredItems[activePhotoIndex].categoryLabel}
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-500">
                   {activePhotoIndex + 1} / {filteredItems.length}
                 </span>
               </div>
 
               <button
                 onClick={() => setActivePhotoIndex(null)}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
                 title="বন্ধ করুন (Esc)"
               >
                 <X className="w-5 h-5" />
@@ -244,7 +244,7 @@ export default function PhotoGallery() {
             </div>
 
             {/* Modal Image View */}
-            <div className="relative w-full h-[55vh] sm:h-[65vh] bg-black flex items-center justify-center">
+            <div className="relative w-full h-[55vh] sm:h-[65vh] bg-slate-950 flex items-center justify-center">
               <Image
                 src={filteredItems[activePhotoIndex].src}
                 alt={filteredItems[activePhotoIndex].title}
@@ -259,7 +259,7 @@ export default function PhotoGallery() {
                   e.stopPropagation();
                   handlePrev();
                 }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm transition-all"
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm transition-all shadow"
                 title="পূর্ববর্তী ছবি (Left Arrow)"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -270,7 +270,7 @@ export default function PhotoGallery() {
                   e.stopPropagation();
                   handleNext();
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm transition-all"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm transition-all shadow"
                 title="পরবর্তী ছবি (Right Arrow)"
               >
                 <ChevronRight className="w-6 h-6" />
@@ -278,11 +278,11 @@ export default function PhotoGallery() {
             </div>
 
             {/* Modal Footer Caption */}
-            <div className="p-4 sm:p-5 bg-slate-900 border-t border-slate-800 text-white">
-              <h4 className="text-lg font-bold text-amber-400">
+            <div className="p-4 sm:p-5 bg-white border-t border-slate-100 text-slate-900">
+              <h4 className="text-lg font-bold text-slate-900">
                 {filteredItems[activePhotoIndex].title}
               </h4>
-              <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
                 {filteredItems[activePhotoIndex].caption}
               </p>
             </div>
@@ -292,4 +292,3 @@ export default function PhotoGallery() {
     </div>
   );
 }
-

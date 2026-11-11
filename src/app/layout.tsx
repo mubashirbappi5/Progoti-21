@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "Eid Reunion 2027",
     "প্রগতি ২১ জরিপ",
     "ব্যাচ ২১ পুনর্মিলনী",
+    "শামসুন্নাহার-ওসমান গনি শিক্ষানিকেতন",
   ],
   authors: [{ name: "প্রগতি ২১ পুনর্মিলনী কমিটি" }],
   icons: {
@@ -34,26 +35,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="bn" suppressHydrationWarning className="dark scroll-smooth">
+    <html lang="bn" className="scroll-smooth">
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                var t = localStorage.getItem('progoti_theme');
-                if (t === 'light') {
-                  document.documentElement.classList.remove('dark');
-                } else {
-                  document.documentElement.classList.add('dark');
-                }
-              } catch (e) {
-                document.documentElement.classList.add('dark');
-              }
+                localStorage.removeItem('progoti_theme');
+                document.documentElement.classList.remove('dark');
+              } catch (e) {}
             `,
           }}
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased">
+      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased">
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
         <Footer />

@@ -22,11 +22,11 @@ function SuccessContent() {
   }, []);
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 text-center shadow-lg transition-colors">
+    <div className="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
+      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 text-center shadow-md transition-colors">
         {/* Logo and Checkmark */}
         <div className="relative w-16 h-16 mx-auto mb-4">
-          <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 bg-white p-1">
+          <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-300 bg-white p-1 shadow-sm">
             <Image
               src="/images/logo.jpg"
               alt="প্রগতি ২১ লোগো"
@@ -40,30 +40,30 @@ function SuccessContent() {
         </div>
 
         {/* School Tag */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 mb-3">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-800 border border-amber-500/20 mb-3">
           <School className="w-3.5 h-3.5" />
           <span>শামসুন্নাহার-ওসমান গনি শিক্ষানিকেতন</span>
         </div>
 
         {/* Name greeting if available */}
         {name && (
-          <p className="text-base font-semibold text-amber-600 dark:text-amber-400 mb-1">
+          <p className="text-base font-semibold text-amber-600 mb-1">
             প্রিয় {name},
           </p>
         )}
 
         {/* Heading: ধন্যবাদ! */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
           ধন্যবাদ!
         </h1>
 
         {/* Secondary text */}
-        <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+        <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
           আপনার মতামত আমাদের জন্য অত্যন্ত মূল্যবান। আপনার সাড়া সফলভাবে জমা হয়েছে।
         </p>
 
         {/* Warm Batch Photo Card */}
-        <div className="mt-5 relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 shadow-sm">
+        <div className="mt-5 relative rounded-xl overflow-hidden border border-slate-200 bg-slate-950 shadow-sm">
           <div className="relative h-44 sm:h-48 w-full">
             <Image
               src="/images/gallery/batch-group-3.jpg"
@@ -85,15 +85,15 @@ function SuccessContent() {
         </div>
 
         {/* Brand Tagline */}
-        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2">
-          <span className="text-xl font-bold tracking-wide text-slate-900 dark:text-white">
+        <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-center gap-2">
+          <span className="text-xl font-bold tracking-wide text-slate-900">
             প্রগতি <span className="text-amber-500">২১</span>
           </span>
           <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
         </div>
 
         {submissionId && (
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-2">
+          <p className="text-[11px] text-slate-400 font-mono mt-2">
             রেসপন্স আইডি: {submissionId.slice(0, 8)}...{submissionId.slice(-4)}
           </p>
         )}
@@ -102,7 +102,7 @@ function SuccessContent() {
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-slate-950 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 hover:bg-amber-600 text-slate-950 transition-colors shadow-sm"
           >
             <Home className="w-4 h-4" />
             <span>হোমপেজে ফিরে যান</span>

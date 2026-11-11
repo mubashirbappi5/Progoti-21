@@ -370,7 +370,7 @@ export default function AdminDashboardPage() {
                     <XAxis dataKey="name" stroke="#64748b" fontSize={10} interval={0} angle={-15} textAnchor="end" />
                     <YAxis stroke="#64748b" fontSize={11} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 12, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     />
                     <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -406,7 +406,7 @@ export default function AdminDashboardPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 12, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     />
                     <Legend wrapperStyle={{ fontSize: "11px", color: "#64748b" }} />
                   </PieChart>
@@ -441,7 +441,7 @@ export default function AdminDashboardPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 12, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     />
                     <Legend wrapperStyle={{ fontSize: "11px", color: "#64748b" }} />
                   </PieChart>
@@ -466,7 +466,7 @@ export default function AdminDashboardPage() {
                     <XAxis dataKey="name" stroke="#64748b" fontSize={10} interval={0} angle={-15} textAnchor="end" />
                     <YAxis stroke="#64748b" fontSize={11} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 12, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     />
                     <Bar dataKey="value" fill="#ec4899" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -495,7 +495,7 @@ export default function AdminDashboardPage() {
                     <XAxis type="number" stroke="#64748b" fontSize={11} allowDecimals={false} />
                     <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={100} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 12, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     />
                     <Bar dataKey="count" fill="#38BDF8" radius={[0, 4, 4, 0]} />
                   </BarChart>
@@ -524,7 +524,7 @@ export default function AdminDashboardPage() {
                     <XAxis type="number" stroke="#64748b" fontSize={11} allowDecimals={false} />
                     <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={120} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 12, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     />
                     <Bar dataKey="count" fill="#F43F5E" radius={[0, 4, 4, 0]} />
                   </BarChart>

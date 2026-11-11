@@ -59,6 +59,17 @@ export default function Footer() {
           <p className="text-[11px] text-slate-400 mt-1">
             © ২০২৭ প্রগতি ২১। সর্বস্বত্ব সংরক্ষিত।
           </p>
+          <p className="text-xs text-slate-600 mt-1.5 font-medium">
+            Developed by{" "}
+            <a
+              href="https://www.mubashirbappi.live/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-amber-700 hover:text-amber-800 hover:underline underline-offset-2 transition-colors"
+            >
+              Mubashir Bappi
+            </a>
+          </p>
         </div>
       </div>
     </footer>

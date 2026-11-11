@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Too many submission attempts. Please wait a moment and try again.",
+          error: "অতিরিক্ত অনুরোধ পাঠানো হয়েছে। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করে আবার চেষ্টা করুন।",
         },
         { status: 429 }
       );
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Validation failed. Please check the form errors.",
+          error: "ফরমে কিছু ত্রুটি রয়েছে। অনুগ্রহ করে লাল চিহ্নিত ফিল্ডগুলো যাচাই করুন।",
           fieldErrors,
         },
         { status: 400 }
@@ -64,25 +64,42 @@ export async function POST(req: NextRequest) {
       ? sanitizeText(data.additionalSuggestions)
       : null;
 
-    // Process activities: if "Custom Activity" was selected, format appropriately
-    const processedPreferredActivities = data.preferredActivities.map((act) => {
-      if (act === "Custom Activity" && data.customPreferredActivity) {
-        return `Custom: ${sanitizeText(data.customPreferredActivity)}`;
-      }
-      return sanitizeText(act);
-    });
+    // 5. Process Step 6: 3 activity inputs
+    let processedPreferredActivities: string[] = [];
+    if (
+      Array.isArray(data.preferredActivities) &&
+      data.preferredActivities.length > 0
+    ) {
+      processedPreferredActivities = data.preferredActivities
+        .map(sanitizeText)
+        .filter(Boolean);
+    } else {
+      const rawActivities = [data.activity1, data.activity2, data.activity3];
+      processedPreferredActivities = rawActivities
+        .map((a) => (a ? sanitizeText(a) : ""))
+        .filter((a) => a.length > 0);
+    }
 
-    const processedActivitiesToAvoid = data.activitiesToAvoid.map((act) => {
-      if (act === "Custom Suggestion" && data.customAvoidActivity) {
-        return `Custom: ${sanitizeText(data.customAvoidActivity)}`;
-      }
-      return sanitizeText(act);
-    });
+    // 6. Process Step 7: 3 avoid inputs
+    let processedActivitiesToAvoid: string[] = [];
+    if (
+      Array.isArray(data.activitiesToAvoid) &&
+      data.activitiesToAvoid.length > 0
+    ) {
+      processedActivitiesToAvoid = data.activitiesToAvoid
+        .map(sanitizeText)
+        .filter(Boolean);
+    } else {
+      const rawAvoids = [data.avoid1, data.avoid2, data.avoid3];
+      processedActivitiesToAvoid = rawAvoids
+        .map((a) => (a ? sanitizeText(a) : ""))
+        .filter((a) => a.length > 0);
+    }
 
-    // 5. Connect to Neon PostgreSQL via Drizzle
+    // 7. Connect to Neon PostgreSQL via Drizzle
     const db = getDb();
 
-    // 6. Check for duplicate mobile number
+    // 8. Check for duplicate mobile number
     const existing = await db
       .select({ id: reunionSubmissions.id, fullName: reunionSubmissions.fullName })
       .from(reunionSubmissions)
@@ -94,14 +111,14 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error:
-            "A survey response has already been submitted with this mobile number. Each member can only submit once.",
+            "এই মোবাইল নম্বর দিয়ে ইতিমধ্যে একটি মতামত সাবমিট করা হয়েছে। প্রতিটি সদস্য শুধুমাত্র একবারই সাবমিট করতে পারবেন।",
           code: "DUPLICATE_MOBILE",
         },
         { status: 409 }
       );
     }
 
-    // 7. Insert record into Neon PostgreSQL
+    // 9. Insert record into Neon PostgreSQL
     const inserted = await db
       .insert(reunionSubmissions)
       .values({
@@ -124,19 +141,22 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Survey response submitted successfully!",
+      message: "আপনার মতামত সফলভাবে সংরক্ষণ করা হয়েছে!",
       id: submissionId,
     });
   } catch (err: any) {
     console.error("Survey submission error:", err);
 
     // Check for PostgreSQL unique constraint violation error code 23505
-    if (err?.code === "23505" || err?.message?.includes("reunion_submissions_mobile_number_unique")) {
+    if (
+      err?.code === "23505" ||
+      err?.message?.includes("reunion_submissions_mobile_number_unique")
+    ) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "A survey response has already been submitted with this mobile number. Each member can only submit once.",
+            "এই মোবাইল নম্বর দিয়ে ইতিমধ্যে একটি মতামত সাবমিট করা হয়েছে। প্রতিটি সদস্য শুধুমাত্র একবারই সাবমিট করতে পারবেন।",
           code: "DUPLICATE_MOBILE",
         },
         { status: 409 }
@@ -149,7 +169,7 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error:
-            "Database configuration error: Neon DATABASE_URL is not set. Please add DATABASE_URL in .env.local",
+            "ডাটাবেজ সংযোগ ত্রুটি: Neon DATABASE_URL পাওয়া যায়নি। অনুগ্রহ করে .env.local যাচাই করুন।",
         },
         { status: 500 }
       );
@@ -159,7 +179,7 @@ export async function POST(req: NextRequest) {
       {
         success: false,
         error:
-          "An unexpected server error occurred while saving your response. Please try again.",
+          "সার্ভার থেকে আপনার মতামত সেভ করার সময় একটি অপ্রত্যাশিত সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
       },
       { status: 500 }
     );

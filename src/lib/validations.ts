@@ -14,59 +14,38 @@ export function normalizeBdPhone(phone: string): string {
 }
 
 export const DATE_OPTIONS = [
-  "2nd day after Eid",
-  "3rd day after Eid",
-  "Custom Date",
+  "ঈদের ২য় দিন",
+  "ঈদের ৩য় দিন",
+  "পছন্দসই কাস্টম তারিখ",
 ] as const;
 
 export const FOOD_OPTIONS = [
-  "Biryani",
-  "Morog Pulao",
-  "Fried Rice + Chicken / Other Items",
-  "Custom Food Preference",
+  "বিরিয়ানি",
+  "মোরগ পোলাও",
+  "ফ্রাইড রাইস + চিকেন / অন্যান্য আইটেম",
+  "পছন্দসই অন্য খাবার",
 ] as const;
 
 export const MEAL_SCHEDULE_OPTIONS = [
-  "Lunch Only",
-  "Lunch + Evening Snacks",
+  "শুধুমাত্র দুপুরের খাবার",
+  "দুপুরের খাবার + সন্ধ্যার নাস্তা",
 ] as const;
 
 export const GIFT_OPTIONS = [
-  "Customized Gift Box",
-  "Only Customized T-shirt",
-  "Custom Gift Preference",
-] as const;
-
-export const ACTIVITY_OPTIONS = [
-  "Cultural Program and Music",
-  "Fun Games and Competitions",
-  "Memories and Storytelling",
-  "Photography and Photo Booth",
-  "Batch Networking and Hangout",
-  "Award Ceremony",
-  "Surprise Performances",
-  "Custom Activity",
-] as const;
-
-export const AVOID_OPTIONS = [
-  "Long Speeches and Formalities",
-  "Excessive Photo Sessions",
-  "Repetitive Games and Competitions",
-  "Lengthy Cultural Programs",
-  "Delayed Food Serving",
-  "Overly Formal Environment",
-  "Custom Suggestion",
+  "কাস্টমাইজড গিফট বক্স",
+  "শুধুমাত্র কাস্টমাইজড টি-শার্ট",
+  "পছন্দসই অন্য উপহার",
 ] as const;
 
 export const surveyFormSchema = z
   .object({
     fullName: z
-      .string({ required_error: "Full name is required" })
+      .string({ required_error: "অনুগ্রহ করে আপনার পূর্ণ নাম লিখুন" })
       .trim()
-      .min(2, "Full name must be at least 2 characters")
-      .max(100, "Full name cannot exceed 100 characters"),
+      .min(2, "পূর্ণ নাম কমপক্ষে ২ অক্ষরের হতে হবে")
+      .max(100, "নাম ১০০ অক্ষরের বেশি হতে পারবে না"),
     mobileNumber: z
-      .string({ required_error: "Mobile number is required" })
+      .string({ required_error: "মোবাইল নম্বর দেওয়া আবশ্যক" })
       .trim()
       .refine(
         (val) => {
@@ -75,107 +54,112 @@ export const surveyFormSchema = z
         },
         {
           message:
-            "Please provide a valid Bangladeshi mobile number (e.g., 017XXXXXXXX or +8801XXXXXXXX)",
+            "সঠিক বাংলাদেশি মোবাইল নম্বর লিখুন (যেমন: 017XXXXXXXX বা +88017XXXXXXXX)",
         }
       ),
     preferredDate: z.string({
-      required_error: "Please select your preferred reunion date",
+      required_error: "অনুগ্রহ করে পুনর্মিলনীর তারিখ পছন্দ করুন",
     }),
     customDate: z.string().optional().nullable(),
     preferredFood: z.string({
-      required_error: "Please select your preferred food menu",
+      required_error: "অনুগ্রহ করে খাবারের পছন্দ নির্বাচন করুন",
     }),
     customFood: z.string().optional().nullable(),
     mealSchedule: z.string({
-      required_error: "Please select your meal schedule preference",
+      required_error: "অনুগ্রহ করে খাবারের সময়সূচি নির্বাচন করুন",
     }),
     preferredGift: z.string({
-      required_error: "Please select your reunion gift preference",
+      required_error: "অনুগ্রহ করে পুনর্মিলনী উপহারের পছন্দ নির্বাচন করুন",
     }),
     customGift: z.string().optional().nullable(),
-    preferredActivities: z
-      .array(z.string())
-      .min(1, "Please select at least 1 activity")
-      .max(3, "You can select up to 3 activities only"),
-    customPreferredActivity: z.string().optional().nullable(),
-    activitiesToAvoid: z
-      .array(z.string())
-      .max(3, "You can select up to 3 experiences to avoid"),
-    customAvoidActivity: z.string().optional().nullable(),
+
+    // Step 6: 3 text input fields for preferred activities
+    activity1: z
+      .string({ required_error: "কমপক্ষে ১টি পছন্দের আয়োজন লিখুন" })
+      .trim()
+      .min(2, "অনুষ্ঠানে আপনি দেখতে চান এমন কমপক্ষে ১টি আয়োজন লিখুন")
+      .optional()
+      .or(z.literal("")),
+    activity2: z.string().optional().nullable(),
+    activity3: z.string().optional().nullable(),
+    preferredActivities: z.array(z.string()).optional(),
+
+    // Step 7: 3 text input fields for activities to avoid
+    avoid1: z.string().optional().nullable(),
+    avoid2: z.string().optional().nullable(),
+    avoid3: z.string().optional().nullable(),
+    activitiesToAvoid: z.array(z.string()).optional(),
+
+    // Step 8: Additional suggestions
     additionalSuggestions: z
       .string()
-      .max(2000, "Suggestions cannot exceed 2000 characters")
+      .max(2000, "পরামর্শ ২০০০ অক্ষরের বেশি হতে পারবে না")
       .optional()
       .nullable(),
   })
   .superRefine((data, ctx) => {
     // Custom Date validation
-    if (data.preferredDate === "Custom Date") {
+    if (
+      data.preferredDate === "পছন্দসই কাস্টম তারিখ" ||
+      data.preferredDate === "Custom Date"
+    ) {
       if (!data.customDate || data.customDate.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Please choose your preferred custom date",
+          message: "অনুগ্রহ করে আপনার পছন্দসই তারিখটি ক্যালেন্ডার থেকে নির্বাচন করুন",
           path: ["customDate"],
         });
       }
     }
 
     // Custom Food validation
-    if (data.preferredFood === "Custom Food Preference") {
+    if (
+      data.preferredFood === "পছন্দসই অন্য খাবার" ||
+      data.preferredFood === "Custom Food Preference"
+    ) {
       if (!data.customFood || data.customFood.trim().length < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Please enter your custom food preference",
+          message: "অনুগ্রহ করে আপনার পছন্দের খাবারের বিবরণ লিখুন",
           path: ["customFood"],
         });
       }
     }
 
     // Custom Gift validation
-    if (data.preferredGift === "Custom Gift Preference") {
+    if (
+      data.preferredGift === "পছন্দসই অন্য উপহার" ||
+      data.preferredGift === "Custom Gift Preference"
+    ) {
       if (!data.customGift || data.customGift.trim().length < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Please enter your custom gift suggestion",
+          message: "অনুগ্রহ করে আপনার পছন্দের উপহারের পরামর্শ লিখুন",
           path: ["customGift"],
         });
       }
     }
 
-    // Custom Activity validation
-    if (data.preferredActivities.includes("Custom Activity")) {
-      if (
-        !data.customPreferredActivity ||
-        data.customPreferredActivity.trim().length < 2
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please specify your custom activity",
-          path: ["customPreferredActivity"],
-        });
-      }
-    }
+    // Step 6 Activity validation: require at least one activity either via activity1 or preferredActivities
+    const hasActivity1 = data.activity1 && data.activity1.trim().length >= 2;
+    const hasActivitiesArray =
+      Array.isArray(data.preferredActivities) &&
+      data.preferredActivities.length > 0;
 
-    // Custom Avoid validation
-    if (data.activitiesToAvoid.includes("Custom Suggestion")) {
-      if (
-        !data.customAvoidActivity ||
-        data.customAvoidActivity.trim().length < 2
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please specify your custom experience to avoid",
-          path: ["customAvoidActivity"],
-        });
-      }
+    if (!hasActivity1 && !hasActivitiesArray) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "কমপক্ষে ১টি পছন্দের আয়োজন বা অনুষ্ঠানের নাম লিখুন (আয়োজন ১)",
+        path: ["activity1"],
+      });
     }
   });
 
 export type SurveyFormData = z.infer<typeof surveyFormSchema>;
 
 export const adminLoginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("সঠিক ইমেইল ঠিকানা লিখুন"),
+  password: z.string().min(6, "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"),
 });
 
 export type AdminLoginData = z.infer<typeof adminLoginSchema>;

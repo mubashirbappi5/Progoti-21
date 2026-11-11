@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Users,
   Calendar,
@@ -11,12 +12,10 @@ import {
   Download,
   Trash2,
   Search,
-  Filter,
   Eye,
   LogOut,
   RefreshCw,
   AlertCircle,
-  CheckCircle2,
   Clock,
   ThumbsDown,
   X,
@@ -39,9 +38,8 @@ import {
 } from "recharts";
 import { formatDate } from "@/lib/utils";
 
-// Custom theme palette for charts
 const COLORS = [
-  "#F59E0B", // Gold amber
+  "#F59E0B", // Amber
   "#38BDF8", // Sky blue
   "#10B981", // Emerald
   "#EC4899", // Pink
@@ -101,7 +99,7 @@ export default function AdminDashboardPage() {
       }
       const data = await res.json();
       if (!data.success) {
-        setError(data.error || "Failed to load dashboard data.");
+        setError(data.error || "ড্যাশবোর্ড তথ্য লোড করা সম্ভব হয়নি।");
         setLoading(false);
         setRefreshing(false);
         return;
@@ -112,7 +110,7 @@ export default function AdminDashboardPage() {
       setCharts(data.charts || {});
     } catch (err: any) {
       console.error("Dashboard fetch error:", err);
-      setError("Failed to connect to the server.");
+      setError("সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -147,18 +145,17 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        alert(data.error || "Failed to delete submission.");
+        alert(data.error || "মতামত ডিলিট করা যায়নি।");
       } else {
         setSubmissions((prev) => prev.filter((s) => s.id !== deleteTargetId));
         setDeleteTargetId(null);
         if (selectedSubmission?.id === deleteTargetId) {
           setSelectedSubmission(null);
         }
-        // Refresh overview
         fetchData();
       }
-    } catch (e) {
-      alert("Error deleting record.");
+    } catch {
+      alert("ডিলিট করার সময় সমস্যা হয়েছে।");
     } finally {
       setIsDeleting(false);
     }
@@ -180,8 +177,8 @@ export default function AdminDashboardPage() {
         const matchesFood =
           foodFilter === "ALL" ||
           item.preferredFood === foodFilter ||
-          (foodFilter === "Custom Food Preference" &&
-            item.preferredFood === "Custom Food Preference");
+          (foodFilter === "পছন্দসই অন্য খাবার" &&
+            item.preferredFood === "পছন্দসই অন্য খাবার");
 
         return matchesQuery && matchesDate && matchesFood;
       })
@@ -192,226 +189,206 @@ export default function AdminDashboardPage() {
       });
   }, [submissions, searchQuery, dateFilter, foodFilter, sortOrder]);
 
-  // Unique date options present in submissions
   const availableDates = useMemo(() => {
     const set = new Set(submissions.map((s) => s.preferredDate));
     return Array.from(set);
   }, [submissions]);
 
-  // Unique food options present in submissions
   const availableFoods = useMemo(() => {
     const set = new Set(submissions.map((s) => s.preferredFood));
     return Array.from(set);
   }, [submissions]);
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6">
       {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-widest text-amber-400 font-bold bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
-              Admin Control Center
-            </span>
-            <span className="text-xs text-slate-400">• Neon PostgreSQL</span>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 bg-white p-1 shrink-0">
+            <Image
+              src="/images/logo.jpg"
+              alt="প্রগতি ২১ লোগো"
+              fill
+              className="object-contain"
+            />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-            Progoti 21 Reunion Analytics
-          </h1>
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                শামসুন্নাহার-ওসমান গনি শিক্ষানিকেতন
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+              প্রগতি ২১ পুনর্মিলনী ড্যাশবোর্ড
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              জরিপের রিয়েল-টাইম তথ্য ও পরিসংখ্যান
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <a
             href="/api/admin/export"
             download
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs text-navy-950 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-500/20 transition-all"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg font-medium text-xs text-slate-950 bg-amber-500 hover:bg-amber-600 transition-colors"
           >
-            <Download className="w-4 h-4" />
-            <span>Export CSV</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>CSV এক্সপোর্ট</span>
           </a>
 
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-navy-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-50"
-            title="Refresh Data"
+            className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            title="তথ্য রিফ্রেশ করুন"
           >
             <RefreshCw
-              className={`w-4 h-4 ${refreshing ? "animate-spin text-amber-400" : ""}`}
+              className={`w-4 h-4 ${refreshing ? "animate-spin text-amber-500" : ""}`}
             />
           </button>
 
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 text-xs font-semibold transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-medium transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <LogOut className="w-3.5 h-3.5" />
+            <span>লগআউট</span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-sm flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2.5">
+          <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Overview Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        <div className="p-4 rounded-xl glass-panel border border-amber-500/20">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Total Submissions
-            </span>
-            <Users className="w-4 h-4 text-amber-400" />
-          </div>
-          <p className="text-2xl font-black text-white">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+            মোট মতামত
+          </span>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {overview.totalSubmissions}
           </p>
-          <span className="text-[11px] text-slate-400">Total responses</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">সর্বমোট সাড়াদাতা</span>
         </div>
 
-        <div className="p-4 rounded-xl glass-panel border border-amber-500/20">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Unique Members
-            </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          </div>
-          <p className="text-2xl font-black text-white">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+            ইউনিক সদস্য
+          </span>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {overview.totalUniqueParticipants}
           </p>
-          <span className="text-[11px] text-slate-400">Unique phones</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">স্বতন্ত্র মোবাইল</span>
         </div>
 
-        <div className="p-4 rounded-xl glass-panel border border-amber-500/20">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Top Date
-            </span>
-            <Calendar className="w-4 h-4 text-sky-400" />
-          </div>
-          <p className="text-sm font-bold text-white truncate" title={overview.topPreferredDate}>
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+            শীর্ষ তারিখ
+          </span>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={overview.topPreferredDate}>
             {overview.topPreferredDate}
           </p>
-          <span className="text-[11px] text-slate-400">Preferred schedule</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">পছন্দসই দিন</span>
         </div>
 
-        <div className="p-4 rounded-xl glass-panel border border-amber-500/20">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Top Food
-            </span>
-            <Utensils className="w-4 h-4 text-amber-400" />
-          </div>
-          <p className="text-sm font-bold text-white truncate" title={overview.topPreferredFood}>
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+            শীর্ষ খাবার
+          </span>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={overview.topPreferredFood}>
             {overview.topPreferredFood}
           </p>
-          <span className="text-[11px] text-slate-400">Most requested</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">জনপ্রিয় মেনু</span>
         </div>
 
-        <div className="p-4 rounded-xl glass-panel border border-amber-500/20">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Top Gift
-            </span>
-            <Gift className="w-4 h-4 text-pink-400" />
-          </div>
-          <p className="text-sm font-bold text-white truncate" title={overview.topPreferredGift}>
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+            শীর্ষ উপহার
+          </span>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={overview.topPreferredGift}>
             {overview.topPreferredGift}
           </p>
-          <span className="text-[11px] text-slate-400">Preferred keepsake</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">পছন্দের স্মারক</span>
         </div>
 
-        <div className="p-4 rounded-xl glass-panel border border-amber-500/20">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Top Activity
-            </span>
-            <Sparkles className="w-4 h-4 text-purple-400" />
-          </div>
-          <p className="text-sm font-bold text-white truncate" title={overview.topPreferredActivity}>
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+            শীর্ষ আয়োজন
+          </span>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate" title={overview.topPreferredActivity}>
             {overview.topPreferredActivity}
           </p>
-          <span className="text-[11px] text-slate-400">Most desired</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">জনপ্রিয় অনুষ্ঠান</span>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800">
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold border-b-2 transition-colors ${
             activeTab === "overview"
-              ? "border-amber-400 text-amber-400 bg-amber-400/5"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-amber-500 text-amber-600 dark:text-amber-400"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
-          <BarChart3 className="w-4 h-4" />
-          <span>Interactive Analytics & Charts</span>
+          <BarChart3 className="w-3.5 h-3.5" />
+          <span>অ্যানালিটিক্স ও চার্টস</span>
         </button>
 
         <button
           onClick={() => setActiveTab("table")}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold border-b-2 transition-colors ${
             activeTab === "table"
-              ? "border-amber-400 text-amber-400 bg-amber-400/5"
-              : "border-transparent text-slate-400 hover:text-slate-200"
+              ? "border-amber-500 text-amber-600 dark:text-amber-400"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
-          <TableIcon className="w-4 h-4" />
-          <span>Responses Table ({filteredSubmissions.length})</span>
+          <TableIcon className="w-3.5 h-3.5" />
+          <span>মতামতের তালিকা ({filteredSubmissions.length})</span>
         </button>
       </div>
 
-      {/* TAB 1: ANALYTICS & CHARTS */}
+      {/* TAB 1: CHARTS */}
       {activeTab === "overview" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Chart 1: Reunion Date Preferences */}
-          <div className="p-5 rounded-2xl glass-panel border border-amber-500/15 flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-amber-400" />
-                Reunion Date Preferences
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Participant schedule votes
-              </p>
-            </div>
-            <div className="h-64 mt-4 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Chart 1: Date */}
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+              পুনর্মিলনীর তারিখ পছন্দ
+            </h3>
+            <div className="h-60 mt-3 w-full">
               {charts.datePreferences?.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={charts.datePreferences} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} angle={-15} textAnchor="end" />
-                    <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
+                  <BarChart data={charts.datePreferences} margin={{ top: 10, right: 10, left: -25, bottom: 20 }}>
+                    <XAxis dataKey="name" stroke="#64748b" fontSize={10} interval={0} angle={-15} textAnchor="end" />
+                    <YAxis stroke="#64748b" fontSize={11} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0b192c", borderColor: "#d4af37", borderRadius: 8, color: "#fff" }}
+                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
                     />
                     <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                  No date votes yet.
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+                  কোনো তথ্য নেই
                 </div>
               )}
             </div>
           </div>
 
-          {/* Chart 2: Food Menu Preferences */}
-          <div className="p-5 rounded-2xl glass-panel border border-amber-500/15 flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Utensils className="w-4 h-4 text-amber-400" />
-                Food Menu Breakdown
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Distribution of desired dishes
-              </p>
-            </div>
-            <div className="h-64 mt-4 w-full">
+          {/* Chart 2: Food */}
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+              খাবার মেনু বণ্টন
+            </h3>
+            <div className="h-60 mt-3 w-full">
               {charts.foodPreferences?.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -421,40 +398,33 @@ export default function AdminDashboardPage() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={75}
-                      innerRadius={40}
-                      paddingAngle={3}
+                      outerRadius={70}
+                      innerRadius={35}
                     >
                       {charts.foodPreferences.map((_: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0b192c", borderColor: "#d4af37", borderRadius: 8, color: "#fff" }}
+                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
                     />
-                    <Legend wrapperStyle={{ fontSize: "11px", color: "#94a3b8" }} />
+                    <Legend wrapperStyle={{ fontSize: "11px", color: "#64748b" }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                  No food preferences recorded.
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+                  কোনো তথ্য নেই
                 </div>
               )}
             </div>
           </div>
 
           {/* Chart 3: Meal Schedule */}
-          <div className="p-5 rounded-2xl glass-panel border border-amber-500/15 flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-400" />
-                Meal Arrangement Preference
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Lunch Only vs Lunch + Snacks
-              </p>
-            </div>
-            <div className="h-64 mt-4 w-full">
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+              খাবারের সময়সূচি পছন্দ
+            </h3>
+            <div className="h-60 mt-3 w-full">
               {charts.mealSchedulePreferences?.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -464,123 +434,104 @@ export default function AdminDashboardPage() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={75}
-                      label
+                      outerRadius={70}
                     >
                       {charts.mealSchedulePreferences.map((_: any, index: number) => (
                         <Cell key={`cell-meal-${index}`} fill={index === 0 ? "#10B981" : "#38BDF8"} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0b192c", borderColor: "#d4af37", borderRadius: 8, color: "#fff" }}
+                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
                     />
-                    <Legend wrapperStyle={{ fontSize: "11px", color: "#94a3b8" }} />
+                    <Legend wrapperStyle={{ fontSize: "11px", color: "#64748b" }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                  No meal schedule votes yet.
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+                  কোনো তথ্য নেই
                 </div>
               )}
             </div>
           </div>
 
-          {/* Chart 4: Gift Preferences */}
-          <div className="p-5 rounded-2xl glass-panel border border-amber-500/15 flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Gift className="w-4 h-4 text-amber-400" />
-                Gift Souvenir Votes
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Gift Box vs Signature T-shirt vs Custom
-              </p>
-            </div>
-            <div className="h-64 mt-4 w-full">
+          {/* Chart 4: Gift */}
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+              উপহার ও স্মারক পছন্দ
+            </h3>
+            <div className="h-60 mt-3 w-full">
               {charts.giftPreferences?.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={charts.giftPreferences} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} angle={-15} textAnchor="end" />
-                    <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
+                  <BarChart data={charts.giftPreferences} margin={{ top: 10, right: 10, left: -25, bottom: 20 }}>
+                    <XAxis dataKey="name" stroke="#64748b" fontSize={10} interval={0} angle={-15} textAnchor="end" />
+                    <YAxis stroke="#64748b" fontSize={11} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0b192c", borderColor: "#d4af37", borderRadius: 8, color: "#fff" }}
+                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
                     />
                     <Bar dataKey="value" fill="#ec4899" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                  No gift preferences recorded.
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+                  কোনো তথ্য নেই
                 </div>
               )}
             </div>
           </div>
 
-          {/* Chart 5: Activity Popularity */}
-          <div className="p-5 rounded-2xl glass-panel border border-amber-500/15 flex flex-col justify-between lg:col-span-2">
-            <div>
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                Top 3 Activities Wanted
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Ranked by total participant selections
-              </p>
-            </div>
-            <div className="h-72 mt-4 w-full">
+          {/* Chart 5: Activities */}
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm lg:col-span-2">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+              সদস্যদের প্রস্তাবিত শীর্ষ আয়োজনসমূহ
+            </h3>
+            <div className="h-64 mt-3 w-full">
               {charts.activityPopularity?.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
                     data={charts.activityPopularity.slice(0, 8)}
-                    margin={{ top: 5, right: 20, left: 90, bottom: 5 }}
+                    margin={{ top: 5, right: 20, left: 100, bottom: 5 }}
                   >
-                    <XAxis type="number" stroke="#94a3b8" fontSize={11} allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={90} />
+                    <XAxis type="number" stroke="#64748b" fontSize={11} allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={100} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0b192c", borderColor: "#d4af37", borderRadius: 8, color: "#fff" }}
+                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
                     />
                     <Bar dataKey="count" fill="#38BDF8" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                  No activity selections recorded yet.
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+                  কোনো তথ্য নেই
                 </div>
               )}
             </div>
           </div>
 
-          {/* Chart 6: Activities to Avoid */}
-          <div className="p-5 rounded-2xl glass-panel border border-amber-500/15 flex flex-col justify-between lg:col-span-3">
-            <div>
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <ThumbsDown className="w-4 h-4 text-rose-400" />
-                Previous Reunion Pitfalls to AVOID
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                What participants strongly prefer NOT to repeat this year
-              </p>
-            </div>
-            <div className="h-64 mt-4 w-full">
+          {/* Chart 6: Avoid */}
+          <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm lg:col-span-3">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+              বর্জনীয় বিষয়ের পরিসংখ্যান
+            </h3>
+            <div className="h-60 mt-3 w-full">
               {charts.activitiesToAvoid?.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
                     data={charts.activitiesToAvoid.slice(0, 8)}
-                    margin={{ top: 5, right: 20, left: 130, bottom: 5 }}
+                    margin={{ top: 5, right: 20, left: 120, bottom: 5 }}
                   >
-                    <XAxis type="number" stroke="#94a3b8" fontSize={11} allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={130} />
+                    <XAxis type="number" stroke="#64748b" fontSize={11} allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={120} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#0b192c", borderColor: "#f43f5e", borderRadius: 8, color: "#fff" }}
+                      contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: 8, color: "#fff", fontSize: 12 }}
                     />
                     <Bar dataKey="count" fill="#F43F5E" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                  No avoid responses recorded yet.
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+                  কোনো তথ্য নেই
                 </div>
               )}
             </div>
@@ -588,30 +539,29 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 2: RESPONSES TABLE */}
+      {/* TAB 2: TABLE */}
       {activeTab === "table" && (
         <div className="space-y-4">
-          {/* Search and Filters Bar */}
-          <div className="p-4 rounded-2xl glass-panel border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Filters */}
+          <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute inset-y-0 my-auto left-3.5 text-slate-400" />
+              <Search className="w-4 h-4 absolute inset-y-0 my-auto left-3 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
-                placeholder="Search by participant name or mobile number..."
+                placeholder="নাম অথবা মোবাইল দিয়ে সার্চ করুন..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-navy-900 border border-slate-700 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                className="w-full pl-9 pr-3.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {/* Date Filter */}
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-navy-900 border border-slate-700 text-slate-300 text-xs focus:outline-none focus:border-amber-400"
+                className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:border-amber-500"
               >
-                <option value="ALL">All Dates</option>
+                <option value="ALL">সকল তারিখ</option>
                 {availableDates.map((d) => (
                   <option key={d} value={d}>
                     {d}
@@ -619,13 +569,12 @@ export default function AdminDashboardPage() {
                 ))}
               </select>
 
-              {/* Food Filter */}
               <select
                 value={foodFilter}
                 onChange={(e) => setFoodFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-navy-900 border border-slate-700 text-slate-300 text-xs focus:outline-none focus:border-amber-400"
+                className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:border-amber-500"
               >
-                <option value="ALL">All Food Options</option>
+                <option value="ALL">সকল খাবার</option>
                 {availableFoods.map((f) => (
                   <option key={f} value={f}>
                     {f}
@@ -633,15 +582,13 @@ export default function AdminDashboardPage() {
                 ))}
               </select>
 
-              {/* Sort Order */}
               <button
                 onClick={() =>
                   setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
                 }
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-navy-900 border border-slate-700 text-slate-300 text-xs hover:text-white"
-                title="Toggle Date Sort Order"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs hover:text-slate-900 dark:hover:text-white"
               >
-                <span>Sort Date</span>
+                <span>তারিখ</span>
                 {sortOrder === "desc" ? (
                   <ChevronDown className="w-3.5 h-3.5" />
                 ) : (
@@ -651,71 +598,60 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="rounded-2xl glass-panel border border-slate-800 overflow-hidden shadow-xl">
+          {/* Table */}
+          <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-navy-900/90 border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+                <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold uppercase">
                   <tr>
-                    <th className="py-3.5 px-4">Participant</th>
-                    <th className="py-3.5 px-4">Mobile</th>
-                    <th className="py-3.5 px-4">Date Choice</th>
-                    <th className="py-3.5 px-4">Food Choice</th>
-                    <th className="py-3.5 px-4">Meal Schedule</th>
-                    <th className="py-3.5 px-4">Gift Choice</th>
-                    <th className="py-3.5 px-4">Submitted At</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
+                    <th className="py-3 px-3.5">অংশগ্রহণকারী</th>
+                    <th className="py-3 px-3.5">মোবাইল</th>
+                    <th className="py-3 px-3.5">তারিখ</th>
+                    <th className="py-3 px-3.5">খাবার</th>
+                    <th className="py-3 px-3.5">সময়সূচি</th>
+                    <th className="py-3 px-3.5">উপহার</th>
+                    <th className="py-3 px-3.5">জমার সময়</th>
+                    <th className="py-3 px-3.5 text-right">পদক্ষেপ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredSubmissions.length > 0 ? (
                     filteredSubmissions.map((row) => (
-                      <tr
-                        key={row.id}
-                        className="hover:bg-amber-400/5 transition-colors group"
-                      >
-                        <td className="py-3.5 px-4 font-semibold text-white whitespace-nowrap">
+                      <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                        <td className="py-3 px-3.5 font-medium text-slate-900 dark:text-white whitespace-nowrap">
                           {row.fullName}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-300 font-mono whitespace-nowrap">
+                        <td className="py-3 px-3.5 text-slate-600 dark:text-slate-300 font-mono whitespace-nowrap">
                           {row.mobileNumber}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
-                          {row.preferredDate === "Custom Date" && row.customDate
-                            ? `Custom (${row.customDate})`
-                            : row.preferredDate}
+                        <td className="py-3 px-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {row.preferredDate}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
-                          {row.preferredFood === "Custom Food Preference" &&
-                          row.customFood
-                            ? `Custom: ${row.customFood}`
-                            : row.preferredFood}
+                        <td className="py-3 px-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {row.preferredFood}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
+                        <td className="py-3 px-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           {row.mealSchedule}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
-                          {row.preferredGift === "Custom Gift Preference" &&
-                          row.customGift
-                            ? `Custom: ${row.customGift}`
-                            : row.preferredGift}
+                        <td className="py-3 px-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {row.preferredGift}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-400 whitespace-nowrap">
+                        <td className="py-3 px-3.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {formatDate(row.createdAt)}
                         </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
+                        <td className="py-3 px-3.5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => setSelectedSubmission(row)}
-                              className="p-1.5 rounded-lg bg-navy-900 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-400/40 transition-colors"
-                              title="View Details"
+                              className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                              title="বিস্তারিত"
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => setDeleteTargetId(row.id)}
-                              className="p-1.5 rounded-lg bg-navy-900 border border-slate-700 text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-colors"
-                              title="Delete Submission"
+                              className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                              title="ডিলিট"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -725,11 +661,8 @@ export default function AdminDashboardPage() {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan={8}
-                        className="py-12 text-center text-slate-400 text-xs"
-                      >
-                        No survey submissions found matching your filters.
+                      <td colSpan={8} className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
+                        কোনো মতামত পাওয়া যায়নি।
                       </td>
                     </tr>
                   )}
@@ -740,183 +673,140 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* VIEW SUBMISSION DETAILS MODAL */}
+      {/* VIEW MODAL */}
       {selectedSubmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl glass-panel-glow border border-amber-500/30 p-6 sm:p-8 max-h-[90vh] overflow-y-auto relative shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <div>
-                <h3 className="text-xl font-bold text-white">
-                  Submission Details
-                </h3>
-                <p className="text-xs text-slate-400">
-                  ID: {selectedSubmission.id}
-                </p>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                মতামতের বিস্তারিত তথ্য
+              </h3>
               <button
                 onClick={() => setSelectedSubmission(null)}
-                className="p-1.5 rounded-lg bg-navy-900 border border-slate-700 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="mt-6 space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-navy-900/60 border border-slate-800">
+            <div className="mt-4 space-y-3.5 text-xs">
+              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                 <div>
-                  <span className="text-slate-400">Full Name</span>
-                  <p className="font-semibold text-white text-sm mt-0.5">
-                    {selectedSubmission.fullName}
-                  </p>
+                  <span className="text-slate-500">পূর্ণ নাম:</span>
+                  <p className="font-semibold text-slate-900 dark:text-white mt-0.5">{selectedSubmission.fullName}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Mobile Number</span>
-                  <p className="font-mono text-white text-sm mt-0.5">
-                    {selectedSubmission.mobileNumber}
-                  </p>
+                  <span className="text-slate-500">মোবাইল:</span>
+                  <p className="font-mono text-slate-900 dark:text-white mt-0.5">{selectedSubmission.mobileNumber}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Preferred Reunion Date</span>
-                  <p className="text-white mt-0.5 font-medium">
-                    {selectedSubmission.preferredDate}
-                    {selectedSubmission.customDate && (
-                      <span className="text-amber-400 ml-1">
-                        ({selectedSubmission.customDate})
-                      </span>
-                    )}
-                  </p>
+                  <span className="text-slate-500">তারিখ:</span>
+                  <p className="text-slate-800 dark:text-white mt-0.5">{selectedSubmission.preferredDate}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Food Menu Choice</span>
-                  <p className="text-white mt-0.5 font-medium">
-                    {selectedSubmission.preferredFood}
-                    {selectedSubmission.customFood && (
-                      <span className="text-amber-400 ml-1 block">
-                        Detail: {selectedSubmission.customFood}
-                      </span>
-                    )}
-                  </p>
+                  <span className="text-slate-500">খাবার:</span>
+                  <p className="text-slate-800 dark:text-white mt-0.5">{selectedSubmission.preferredFood}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Meal Schedule</span>
-                  <p className="text-white mt-0.5 font-medium">
-                    {selectedSubmission.mealSchedule}
-                  </p>
+                  <span className="text-slate-500">সময়সূচি:</span>
+                  <p className="text-slate-800 dark:text-white mt-0.5">{selectedSubmission.mealSchedule}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Gift Souvenir</span>
-                  <p className="text-white mt-0.5 font-medium">
-                    {selectedSubmission.preferredGift}
-                    {selectedSubmission.customGift && (
-                      <span className="text-amber-400 ml-1 block">
-                        Detail: {selectedSubmission.customGift}
-                      </span>
-                    )}
-                  </p>
+                  <span className="text-slate-500">উপহার:</span>
+                  <p className="text-slate-800 dark:text-white mt-0.5">{selectedSubmission.preferredGift}</p>
                 </div>
               </div>
 
-              {/* Preferred Activities */}
-              <div className="p-4 rounded-xl bg-navy-900/60 border border-slate-800">
-                <span className="text-amber-400 font-bold uppercase tracking-wider text-[10px]">
-                  Preferred Activities (Up to 3)
+              {/* Step 6: 3 Activities */}
+              <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <span className="font-semibold text-amber-600 dark:text-amber-400 block mb-1.5">
+                  পছন্দের আয়োজনসমূহ (ধাপ ৬):
                 </span>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="space-y-1">
                   {Array.isArray(selectedSubmission.preferredActivities) &&
                   selectedSubmission.preferredActivities.length > 0 ? (
-                    selectedSubmission.preferredActivities.map((act: string) => (
-                      <span
-                        key={act}
-                        className="px-2.5 py-1 rounded-md bg-amber-400/10 text-amber-300 border border-amber-400/20 text-xs"
-                      >
-                        {act}
-                      </span>
+                    selectedSubmission.preferredActivities.map((act: string, idx: number) => (
+                      <div key={idx} className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span className="text-slate-400 dark:text-slate-500">•</span>
+                        <span>{act}</span>
+                      </div>
                     ))
                   ) : (
-                    <span className="text-slate-400">None selected</span>
+                    <span className="text-slate-400 dark:text-slate-500">কোনো আয়োজন নেই</span>
                   )}
                 </div>
               </div>
 
-              {/* Activities to Avoid */}
-              <div className="p-4 rounded-xl bg-navy-900/60 border border-slate-800">
-                <span className="text-rose-400 font-bold uppercase tracking-wider text-[10px]">
-                  Previous Experiences to AVOID
+              {/* Step 7: 3 Avoid */}
+              <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <span className="font-semibold text-rose-600 dark:text-rose-400 block mb-1.5">
+                  বর্জনীয় বিষয়সমূহ (ধাপ ৭):
                 </span>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="space-y-1">
                   {Array.isArray(selectedSubmission.activitiesToAvoid) &&
                   selectedSubmission.activitiesToAvoid.length > 0 ? (
-                    selectedSubmission.activitiesToAvoid.map((act: string) => (
-                      <span
-                        key={act}
-                        className="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20 text-xs"
-                      >
-                        {act}
-                      </span>
+                    selectedSubmission.activitiesToAvoid.map((act: string, idx: number) => (
+                      <div key={idx} className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span className="text-slate-400 dark:text-slate-500">•</span>
+                        <span>{act}</span>
+                      </div>
                     ))
                   ) : (
-                    <span className="text-slate-400">None specified</span>
+                    <span className="text-slate-400 dark:text-slate-500">কোনো বর্জনীয় বিষয় নেই</span>
                   )}
                 </div>
               </div>
 
-              {/* Additional Suggestions */}
-              <div className="p-4 rounded-xl bg-navy-900/60 border border-slate-800">
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                  Additional Suggestions
+              {/* Step 8: Suggestions */}
+              <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <span className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                  অতিরিক্ত পরামর্শ:
                 </span>
-                <p className="mt-1 text-slate-200 text-xs whitespace-pre-wrap leading-relaxed">
-                  {selectedSubmission.additionalSuggestions ||
-                    "No additional suggestions provided."}
+                <p className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                  {selectedSubmission.additionalSuggestions || "কোনো পরামর্শ নেই।"}
                 </p>
-              </div>
-
-              <div className="pt-2 text-slate-400 text-[11px] text-right">
-                Submitted on: {formatDate(selectedSubmission.createdAt)}
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-800 flex justify-end">
+            <div className="mt-5 pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
               <button
                 onClick={() => setSelectedSubmission(null)}
-                className="px-5 py-2 rounded-xl bg-slate-800 text-white font-semibold text-xs hover:bg-slate-700"
+                className="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-medium text-xs transition-colors"
               >
-                Close
+                বন্ধ করুন
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* DELETE MODAL */}
       {deleteTargetId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl glass-panel-glow border border-rose-500/30 p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Trash2 className="w-5 h-5 text-rose-400" />
-              Confirm Deletion
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-xl">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-rose-500" />
+              মতামত মুছে ফেলুন
             </h3>
-            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-              Are you sure you want to delete this response permanently? This action
-              cannot be undone in the Neon PostgreSQL database.
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
+              আপনি কি নিশ্চিতভাবে এই মতামতটি মুছে ফেলতে চান?
             </p>
 
-            <div className="mt-6 flex items-center justify-end gap-3">
+            <div className="mt-5 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDeleteTargetId(null)}
-                disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold"
+                className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs transition-colors"
               >
-                Cancel
+                বাতিল
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors"
               >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
+                {isDeleting ? "মুছে ফেলা হচ্ছে..." : "মুছে ফেলুন"}
               </button>
             </div>
           </div>

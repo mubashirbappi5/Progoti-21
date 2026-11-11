@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
   Phone,
@@ -10,8 +10,8 @@ import {
   Utensils,
   Clock,
   Gift,
-  Sparkles,
-  AlertTriangle,
+  PenTool,
+  Ban,
   MessageSquare,
   ArrowRight,
   ArrowLeft,
@@ -19,16 +19,13 @@ import {
   AlertCircle,
   Loader2,
   CalendarDays,
-  FileQuestion,
-  HelpCircle,
+  School,
 } from "lucide-react";
 import {
   DATE_OPTIONS,
   FOOD_OPTIONS,
   MEAL_SCHEDULE_OPTIONS,
   GIFT_OPTIONS,
-  ACTIVITY_OPTIONS,
-  AVOID_OPTIONS,
   BD_PHONE_REGEX,
 } from "@/lib/validations";
 
@@ -42,10 +39,15 @@ interface SurveyFormState {
   mealSchedule: string;
   preferredGift: string;
   customGift: string;
-  preferredActivities: string[];
-  customPreferredActivity: string;
-  activitiesToAvoid: string[];
-  customAvoidActivity: string;
+  // Step 6: 3 text fields
+  activity1: string;
+  activity2: string;
+  activity3: string;
+  // Step 7: 3 text fields
+  avoid1: string;
+  avoid2: string;
+  avoid3: string;
+  // Step 8
   additionalSuggestions: string;
 }
 
@@ -59,24 +61,26 @@ const INITIAL_STATE: SurveyFormState = {
   mealSchedule: "",
   preferredGift: "",
   customGift: "",
-  preferredActivities: [],
-  customPreferredActivity: "",
-  activitiesToAvoid: [],
-  customAvoidActivity: "",
+  activity1: "",
+  activity2: "",
+  activity3: "",
+  avoid1: "",
+  avoid2: "",
+  avoid3: "",
   additionalSuggestions: "",
 };
 
 const TOTAL_STEPS = 8;
 
 const STEP_TITLES = [
-  "Personal Info",
-  "Reunion Date",
-  "Food Menu",
-  "Meal Schedule",
-  "Reunion Gifts",
-  "Activities",
-  "Avoid Repeating",
-  "Suggestions & Review",
+  "ব্যক্তিগত তথ্য",
+  "তারিখ পছন্দ",
+  "খাবার পছন্দ",
+  "সময়সূচি",
+  "উপহার পছন্দ",
+  "পছন্দের আয়োজন",
+  "বর্জনীয় বিষয়",
+  "পরামর্শ ও প্রিভিউ",
 ];
 
 export default function SurveyPage() {
@@ -87,10 +91,9 @@ export default function SurveyPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Field change helpers
+  // Field change helper
   const updateField = (field: keyof SurveyFormState, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for field
     if (stepErrors[field]) {
       setStepErrors((prev) => {
         const next = { ...prev };
@@ -100,67 +103,6 @@ export default function SurveyPage() {
     }
   };
 
-  const togglePreferredActivity = (activity: string) => {
-    setFormData((prev) => {
-      const exists = prev.preferredActivities.includes(activity);
-      if (exists) {
-        return {
-          ...prev,
-          preferredActivities: prev.preferredActivities.filter(
-            (a) => a !== activity
-          ),
-        };
-      } else {
-        if (prev.preferredActivities.length >= 3) {
-          setStepErrors((errs) => ({
-            ...errs,
-            preferredActivities: "You can select a maximum of 3 activities only.",
-          }));
-          return prev;
-        }
-        setStepErrors((errs) => {
-          const next = { ...errs };
-          delete next.preferredActivities;
-          return next;
-        });
-        return {
-          ...prev,
-          preferredActivities: [...prev.preferredActivities, activity],
-        };
-      }
-    });
-  };
-
-  const toggleAvoidActivity = (activity: string) => {
-    setFormData((prev) => {
-      const exists = prev.activitiesToAvoid.includes(activity);
-      if (exists) {
-        return {
-          ...prev,
-          activitiesToAvoid: prev.activitiesToAvoid.filter((a) => a !== activity),
-        };
-      } else {
-        if (prev.activitiesToAvoid.length >= 3) {
-          setStepErrors((errs) => ({
-            ...errs,
-            activitiesToAvoid:
-              "You can select a maximum of 3 experiences to avoid.",
-          }));
-          return prev;
-        }
-        setStepErrors((errs) => {
-          const next = { ...errs };
-          delete next.activitiesToAvoid;
-          return next;
-        });
-        return {
-          ...prev,
-          activitiesToAvoid: [...prev.activitiesToAvoid, activity],
-        };
-      }
-    });
-  };
-
   // Step Validation
   const validateCurrentStep = (): boolean => {
     const errors: Record<string, string> = {};
@@ -168,88 +110,73 @@ export default function SurveyPage() {
     switch (currentStep) {
       case 1:
         if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
-          errors.fullName = "Please enter your full name (minimum 2 characters)";
+          errors.fullName = "আপনার পূর্ণ নাম লিখুন (কমপক্ষে ২ অক্ষর)";
         }
         const cleanedPhone = formData.mobileNumber.replace(/[\s\-\(\)]/g, "");
         if (!cleanedPhone) {
-          errors.mobileNumber = "Mobile number is required";
+          errors.mobileNumber = "মোবাইল নম্বর দেওয়া আবশ্যক";
         } else if (!BD_PHONE_REGEX.test(cleanedPhone)) {
           errors.mobileNumber =
-            "Enter a valid Bangladesh number (e.g. 01712345678 or +8801712345678)";
+            "সঠিক বাংলাদেশি নম্বর দিন (যেমন: 017XXXXXXXX)";
         }
         break;
 
       case 2:
         if (!formData.preferredDate) {
-          errors.preferredDate = "Please choose a reunion date preference";
+          errors.preferredDate = "অনুগ্রহ করে পুনর্মিলনীর একটি তারিখ নির্বাচন করুন";
         } else if (
-          formData.preferredDate === "Custom Date" &&
+          formData.preferredDate === "পছন্দসই কাস্টম তারিখ" &&
           !formData.customDate
         ) {
-          errors.customDate = "Please pick your preferred custom date";
+          errors.customDate = "পছন্দসই তারিখটি নির্বাচন করুন";
         }
         break;
 
       case 3:
         if (!formData.preferredFood) {
-          errors.preferredFood = "Please select a food menu preference";
+          errors.preferredFood = "অনুগ্রহ করে খাবারের পছন্দ নির্বাচন করুন";
         } else if (
-          formData.preferredFood === "Custom Food Preference" &&
+          formData.preferredFood === "পছন্দসই অন্য খাবার" &&
           (!formData.customFood.trim() || formData.customFood.trim().length < 2)
         ) {
-          errors.customFood = "Please specify your custom food preference";
+          errors.customFood = "আপনার পছন্দের খাবারের নাম লিখুন";
         }
         break;
 
       case 4:
         if (!formData.mealSchedule) {
-          errors.mealSchedule = "Please select your meal schedule preference";
+          errors.mealSchedule = "খাবারের সময়সূচি নির্বাচন করুন";
         }
         break;
 
       case 5:
         if (!formData.preferredGift) {
-          errors.preferredGift = "Please select a reunion gift preference";
+          errors.preferredGift = "অনুগ্রহ করে উপহারের পছন্দ নির্বাচন করুন";
         } else if (
-          formData.preferredGift === "Custom Gift Preference" &&
+          formData.preferredGift === "পছন্দসই অন্য উপহার" &&
           (!formData.customGift.trim() || formData.customGift.trim().length < 2)
         ) {
-          errors.customGift = "Please specify your custom gift suggestion";
+          errors.customGift = "আপনার পছন্দের উপহারের বিবরণ লিখুন";
         }
         break;
 
       case 6:
-        if (formData.preferredActivities.length === 0) {
-          errors.preferredActivities =
-            "Please select at least 1 activity (up to 3)";
-        } else if (formData.preferredActivities.length > 3) {
-          errors.preferredActivities = "Maximum 3 activities allowed";
-        }
         if (
-          formData.preferredActivities.includes("Custom Activity") &&
-          (!formData.customPreferredActivity.trim() ||
-            formData.customPreferredActivity.trim().length < 2)
+          !formData.activity1.trim() &&
+          !formData.activity2.trim() &&
+          !formData.activity3.trim()
         ) {
-          errors.customPreferredActivity = "Please describe your custom activity";
+          errors.activity1 =
+            "কমপক্ষে ১টি পছন্দের আয়োজন বা অনুষ্ঠানের নাম লিখুন (ঘর ১)";
         }
         break;
 
       case 7:
-        if (formData.activitiesToAvoid.length > 3) {
-          errors.activitiesToAvoid = "Maximum 3 selections allowed";
-        }
-        if (
-          formData.activitiesToAvoid.includes("Custom Suggestion") &&
-          (!formData.customAvoidActivity.trim() ||
-            formData.customAvoidActivity.trim().length < 2)
-        ) {
-          errors.customAvoidActivity =
-            "Please describe the custom item you'd prefer to avoid";
-        }
+        // Optional
         break;
 
       case 8:
-        // Optional suggestions, no blocking validations
+        // Optional
         break;
     }
 
@@ -283,11 +210,25 @@ export default function SurveyPage() {
     setIsSubmitting(true);
     setServerError(null);
 
+    const payload = {
+      ...formData,
+      preferredActivities: [
+        formData.activity1.trim(),
+        formData.activity2.trim(),
+        formData.activity3.trim(),
+      ].filter(Boolean),
+      activitiesToAvoid: [
+        formData.avoid1.trim(),
+        formData.avoid2.trim(),
+        formData.avoid3.trim(),
+      ].filter(Boolean),
+    };
+
     try {
       const response = await fetch("/api/survey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -298,13 +239,12 @@ export default function SurveyPage() {
         }
         setServerError(
           result.error ||
-            "Unable to submit survey. Please review your answers and try again."
+            "মতামত জমা দেওয়া সম্ভব হয়নি। অনুগ্রহ করে তথ্য যাচাই করে আবার চেষ্টা করুন।"
         );
         setIsSubmitting(false);
         return;
       }
 
-      // Success! Redirect to dedicated success screen
       router.push(
         `/survey/success?name=${encodeURIComponent(
           formData.fullName
@@ -313,7 +253,7 @@ export default function SurveyPage() {
     } catch (err: any) {
       console.error("Submission failed:", err);
       setServerError(
-        "A network error occurred while communicating with the server. Please check your connection."
+        "সার্ভারের সাথে যোগাযোগের সময় নেটওয়ার্ক সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।"
       );
       setIsSubmitting(false);
     }
@@ -322,32 +262,66 @@ export default function SurveyPage() {
   const progressPercent = Math.round(((currentStep - 1) / (TOTAL_STEPS - 1)) * 100);
 
   return (
-    <div className="relative py-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto w-full">
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+    <div className="py-10 px-4 sm:px-6 lg:px-8 max-w-2xl mx-auto w-full">
+      {/* Top Campus Inspiration Banner */}
+      <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 mb-8 bg-slate-900 shadow-sm">
+        <div className="relative h-32 sm:h-40 w-full">
+          <Image
+            src="/images/gallery/campus-wide.jpg"
+            alt="শামসুন্নাহার-ওসমান গনি শিক্ষানিকেতন ক্যাম্পাস"
+            fill
+            className="object-cover opacity-60 dark:opacity-40"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
+        </div>
+        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 flex items-end justify-between gap-3 text-white">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                <School className="w-3 h-3" />
+                শামসুন্নাহার-ওসমান গনি শিক্ষানিকেতন
+              </span>
+              <span className="text-[11px] text-slate-300 hidden sm:inline">• এসএসসি ব্যাচ ২০২১</span>
+            </div>
+            <h2 className="text-base sm:text-xl font-bold">
+              প্রগতি ২১ • ঈদুল ফিতর পুনর্মিলনী ২০২৭
+            </h2>
+          </div>
+          <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/20 bg-white p-0.5 shrink-0 hidden sm:block">
+            <Image
+              src="/images/logo.jpg"
+              alt="প্রগতি ২১ লোগো"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Header & Stepper */}
       <div className="text-center mb-8">
-        <span className="inline-block text-xs uppercase tracking-widest text-amber-400 font-bold bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 mb-3">
-          Step {currentStep} of {TOTAL_STEPS} • {STEP_TITLES[currentStep - 1]}
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-          Progoti 21 Reunion Survey
+        <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">
+          ধাপ {currentStep} / {TOTAL_STEPS} • {STEP_TITLES[currentStep - 1]}
+        </p>
+
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+          প্রগতি ২১ পুনর্মিলনী জরিপ
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Eid-ul-Fitr Reunion 2027 • Help us curate the perfect get-together
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+          ঈদুল ফিতর পুনর্মিলনী ২০২৭ • আপনার মতামত দিয়ে আয়োজন সুন্দর করুন
         </p>
 
         {/* Progress Bar */}
-        <div className="mt-6 w-full bg-navy-900 h-2.5 rounded-full overflow-hidden border border-slate-800 relative">
+        <div className="mt-5 w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 transition-all duration-300 rounded-full"
+            className="h-full bg-amber-500 transition-all duration-300 rounded-full"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
 
-        {/* Step Indicator Badges (Horizontal scroll on mobile) */}
-        <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400 font-medium overflow-x-auto pb-1 gap-1">
+        {/* Step Numbers */}
+        <div className="mt-4 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
           {STEP_TITLES.map((title, idx) => {
             const stepNum = idx + 1;
             const isCompleted = stepNum < currentStep;
@@ -356,726 +330,594 @@ export default function SurveyPage() {
             return (
               <div
                 key={title}
-                className={`flex items-center gap-1 shrink-0 px-2 py-1 rounded ${
+                className={`flex items-center gap-1 ${
                   isCurrent
-                    ? "text-amber-400 font-bold bg-amber-400/10 border border-amber-500/20"
+                    ? "text-amber-600 dark:text-amber-400 font-bold"
                     : isCompleted
-                    ? "text-slate-300"
-                    : "text-slate-400"
+                    ? "text-slate-800 dark:text-slate-300"
+                    : "text-slate-400 dark:text-slate-600"
                 }`}
               >
                 <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
+                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
                     isCompleted
-                      ? "bg-amber-400 text-navy-950 font-bold"
+                      ? "bg-amber-500 text-slate-950 font-bold"
                       : isCurrent
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-400/40"
-                      : "bg-slate-800 text-slate-400"
+                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-500"
                   }`}
                 >
-                  {isCompleted ? <Check className="w-2.5 h-2.5 stroke-[3]" /> : stepNum}
+                  {isCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : stepNum}
                 </span>
-                <span className="hidden sm:inline">{title}</span>
+                <span className="hidden md:inline">{title}</span>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Global Server Error Alert */}
+      {/* Server Error Alert */}
       {serverError && (
-        <div className="mb-6 p-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-sm flex items-start gap-3 shadow-lg">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+        <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-semibold text-rose-200">Submission Error</p>
-            <p className="mt-0.5">{serverError}</p>
+            <p className="font-semibold text-rose-800 dark:text-rose-200">সাবমিশন ত্রুটি</p>
+            <p className="mt-0.5 text-xs">{serverError}</p>
           </div>
         </div>
       )}
 
-      {/* Form Card */}
+      {/* Main Form Box */}
       <form onSubmit={handleSubmit}>
-        <div className="rounded-2xl glass-panel-glow p-6 sm:p-8 relative min-h-[380px] flex flex-col justify-between">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="flex-1"
-            >
-              {/* STEP 1: Personal Information */}
-              {currentStep === 1 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <User className="w-5 h-5 text-amber-400" />
-                      Step 1: Personal Information
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Please enter your contact details. Mobile numbers are used to verify unique participants.
-                    </p>
-                  </div>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm transition-colors">
+          {/* STEP 1: ব্যক্তিগত তথ্য */}
+          {currentStep === 1 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <User className="w-5 h-5 text-amber-500" />
+                  ধাপ ১: ব্যক্তিগত তথ্য
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  অনুগ্রহ করে আপনার যোগাযোগের তথ্য প্রদান করুন।
+                </p>
+              </div>
 
-                  {/* Full Name */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-200 mb-2">
-                      Full Name <span className="text-amber-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="e.g. Tanvir Ahmed"
-                        value={formData.fullName}
-                        onChange={(e) => updateField("fullName", e.target.value)}
-                        className={`w-full px-4 py-3 rounded-xl bg-navy-900/90 border text-white placeholder-slate-500 focus:outline-none transition-all ${
-                          stepErrors.fullName
-                            ? "border-rose-500 focus:ring-2 focus:ring-rose-500/30"
-                            : "border-slate-700/80 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                        }`}
-                      />
-                    </div>
-                    {stepErrors.fullName && (
-                      <p className="text-xs text-rose-400 mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {stepErrors.fullName}
-                      </p>
-                    )}
-                  </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  পূর্ণ নাম <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: তানভীর আহমেদ"
+                  value={formData.fullName}
+                  onChange={(e) => updateField("fullName", e.target.value)}
+                  className={`w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none ${
+                    stepErrors.fullName
+                      ? "border-rose-500"
+                      : "border-slate-300 dark:border-slate-800 focus:border-amber-500"
+                  }`}
+                />
+                {stepErrors.fullName && (
+                  <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {stepErrors.fullName}
+                  </p>
+                )}
+              </div>
 
-                  {/* Mobile Number */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-200 mb-2">
-                      Mobile Number <span className="text-amber-400">*</span>
-                      <span className="text-xs font-normal text-slate-400 ml-2">
-                        (Bangladesh format: 01XXXXXXXXX)
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <Phone className="w-4 h-4" />
-                      </div>
-                      <input
-                        type="tel"
-                        placeholder="01712345678"
-                        value={formData.mobileNumber}
-                        onChange={(e) => updateField("mobileNumber", e.target.value)}
-                        className={`w-full pl-10 pr-4 py-3 rounded-xl bg-navy-900/90 border text-white placeholder-slate-500 focus:outline-none transition-all ${
-                          stepErrors.mobileNumber
-                            ? "border-rose-500 focus:ring-2 focus:ring-rose-500/30"
-                            : "border-slate-700/80 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                        }`}
-                      />
-                    </div>
-                    {stepErrors.mobileNumber && (
-                      <p className="text-xs text-rose-400 mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {stepErrors.mobileNumber}
-                      </p>
-                    )}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  মোবাইল নম্বর <span className="text-amber-500">*</span>
+                  <span className="text-xs font-normal text-slate-500 ml-2">
+                    (যেমন: 017XXXXXXXX)
+                  </span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <Phone className="w-4 h-4" />
                   </div>
+                  <input
+                    type="tel"
+                    placeholder="01712345678"
+                    value={formData.mobileNumber}
+                    onChange={(e) => updateField("mobileNumber", e.target.value)}
+                    className={`w-full pl-9 pr-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none ${
+                      stepErrors.mobileNumber
+                        ? "border-rose-500"
+                        : "border-slate-300 dark:border-slate-800 focus:border-amber-500"
+                    }`}
+                  />
                 </div>
-              )}
+                {stepErrors.mobileNumber && (
+                  <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {stepErrors.mobileNumber}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
-              {/* STEP 2: Reunion Date */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-amber-400" />
-                      Step 2: Reunion Date
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      When would you prefer to organize the reunion?
-                    </p>
-                  </div>
+          {/* STEP 2: পুনর্মিলনীর তারিখ */}
+          {currentStep === 2 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-amber-500" />
+                  ধাপ ২: পুনর্মিলনীর তারিখ
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  ঈদের কততম দিনে পুনর্মিলনী আয়োজন করলে ভালো হয়?
+                </p>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {DATE_OPTIONS.map((option) => {
-                      const isSelected = formData.preferredDate === option;
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => updateField("preferredDate", option)}
-                          className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[90px] ${
-                            isSelected
-                              ? "bg-amber-400/15 border-amber-400 text-white shadow-md shadow-amber-400/10 ring-1 ring-amber-400/50"
-                              : "bg-navy-900/60 border-slate-700/70 text-slate-300 hover:border-slate-500 hover:bg-navy-900"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-semibold text-sm">{option}</span>
-                            <div
-                              className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                                isSelected
-                                  ? "border-amber-400 bg-amber-400 text-navy-950"
-                                  : "border-slate-500"
-                              }`}
-                            >
-                              {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                            </div>
-                          </div>
-                          <span className="text-xs text-slate-400 mt-2">
-                            {option === "2nd day after Eid" && "High turnout expected"}
-                            {option === "3rd day after Eid" && "More family time flexibility"}
-                            {option === "Custom Date" && "Pick your own convenient date"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {stepErrors.preferredDate && (
-                    <p className="text-xs text-rose-400 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      {stepErrors.preferredDate}
-                    </p>
-                  )}
-
-                  {/* Conditional Custom Date Picker */}
-                  {formData.preferredDate === "Custom Date" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-xl bg-navy-900/80 border border-amber-500/20 space-y-2"
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {DATE_OPTIONS.map((option) => {
+                  const isSelected = formData.preferredDate === option;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => updateField("preferredDate", option)}
+                      className={`p-3.5 rounded-xl border text-left transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? "bg-amber-500/10 border-amber-500 text-slate-900 dark:text-white font-semibold"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
                     >
-                      <label className="block text-sm font-semibold text-amber-300 flex items-center gap-2">
-                        <CalendarDays className="w-4 h-4 text-amber-400" />
-                        Preferred Custom Date <span className="text-amber-400">*</span>
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.customDate}
-                        onChange={(e) => updateField("customDate", e.target.value)}
-                        className={`w-full px-4 py-2.5 rounded-lg bg-navy-950 border text-white focus:outline-none ${
-                          stepErrors.customDate
-                            ? "border-rose-500"
-                            : "border-slate-700 focus:border-amber-400"
+                      <span className="text-xs sm:text-sm">{option}</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          isSelected
+                            ? "border-amber-500 bg-amber-500 text-slate-950"
+                            : "border-slate-400 dark:border-slate-600"
                         }`}
-                      />
-                      {stepErrors.customDate && (
-                        <p className="text-xs text-rose-400 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {stepErrors.customDate}
-                        </p>
-                      )}
-                    </motion.div>
+                      >
+                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {stepErrors.preferredDate && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {stepErrors.preferredDate}
+                </p>
+              )}
+
+              {formData.preferredDate === "পছন্দসই কাস্টম তারিখ" && (
+                <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <CalendarDays className="w-4 h-4 text-amber-500" />
+                    পছন্দসই তারিখটি নির্বাচন করুন <span className="text-amber-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.customDate}
+                    onChange={(e) => updateField("customDate", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-amber-500"
+                  />
+                  {stepErrors.customDate && (
+                    <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {stepErrors.customDate}
+                    </p>
                   )}
                 </div>
               )}
+            </div>
+          )}
 
-              {/* STEP 3: Food Preferences */}
-              {currentStep === 3 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Utensils className="w-5 h-5 text-amber-400" />
-                      Step 3: Food Preferences
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Which food menu would you prefer for our reunion feast?
-                    </p>
-                  </div>
+          {/* STEP 3: খাবার পছন্দ */}
+          {currentStep === 3 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-amber-500" />
+                  ধাপ ৩: খাবার পছন্দ
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  পুনর্মিলনীর খাবারে আপনার পছন্দের মেনু কোনটি?
+                </p>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {FOOD_OPTIONS.map((option) => {
-                      const isSelected = formData.preferredFood === option;
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => updateField("preferredFood", option)}
-                          className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between ${
-                            isSelected
-                              ? "bg-amber-400/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-md shadow-amber-400/10"
-                              : "bg-navy-900/60 border-slate-700/70 text-slate-300 hover:border-slate-500 hover:bg-navy-900"
-                          }`}
-                        >
-                          <span className="font-semibold text-sm">{option}</span>
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
-                              isSelected
-                                ? "border-amber-400 bg-amber-400 text-navy-950"
-                                : "border-slate-500"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {stepErrors.preferredFood && (
-                    <p className="text-xs text-rose-400 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      {stepErrors.preferredFood}
-                    </p>
-                  )}
-
-                  {/* Conditional Custom Food Input */}
-                  {formData.preferredFood === "Custom Food Preference" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-xl bg-navy-900/80 border border-amber-500/20 space-y-2"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {FOOD_OPTIONS.map((option) => {
+                  const isSelected = formData.preferredFood === option;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => updateField("preferredFood", option)}
+                      className={`p-3.5 rounded-xl border text-left transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? "bg-amber-500/10 border-amber-500 text-slate-900 dark:text-white font-semibold"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
                     >
-                      <label className="block text-sm font-semibold text-amber-300">
-                        Custom Food Suggestion <span className="text-amber-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Kacchi Biryani with Borhani and Firni"
-                        value={formData.customFood}
-                        onChange={(e) => updateField("customFood", e.target.value)}
-                        className={`w-full px-4 py-2.5 rounded-lg bg-navy-950 border text-white placeholder-slate-500 focus:outline-none ${
-                          stepErrors.customFood
-                            ? "border-rose-500"
-                            : "border-slate-700 focus:border-amber-400"
+                      <span className="text-xs sm:text-sm">{option}</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                          isSelected
+                            ? "border-amber-500 bg-amber-500 text-slate-950"
+                            : "border-slate-400 dark:border-slate-600"
                         }`}
-                      />
-                      {stepErrors.customFood && (
-                        <p className="text-xs text-rose-400 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {stepErrors.customFood}
-                        </p>
-                      )}
-                    </motion.div>
-                  )}
-                </div>
+                      >
+                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {stepErrors.preferredFood && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {stepErrors.preferredFood}
+                </p>
               )}
 
-              {/* STEP 4: Meal Schedule */}
-              {currentStep === 4 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-amber-400" />
-                      Step 4: Meal Schedule
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Which meal arrangement would you prefer for the event?
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {MEAL_SCHEDULE_OPTIONS.map((option) => {
-                      const isSelected = formData.mealSchedule === option;
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => updateField("mealSchedule", option)}
-                          className={`p-5 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[110px] ${
-                            isSelected
-                              ? "bg-amber-400/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-md shadow-amber-400/10"
-                              : "bg-navy-900/60 border-slate-700/70 text-slate-300 hover:border-slate-500 hover:bg-navy-900"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-bold text-base">{option}</span>
-                            <div
-                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                isSelected
-                                  ? "border-amber-400 bg-amber-400 text-navy-950"
-                                  : "border-slate-500"
-                              }`}
-                            >
-                              {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                            </div>
-                          </div>
-                          <span className="text-xs text-slate-400 mt-3">
-                            {option === "Lunch Only"
-                              ? "Focus entirely on afternoon grand lunch and main gathering"
-                              : "Lunch followed by evening tea, snacks, and extended conversations"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {stepErrors.mealSchedule && (
-                    <p className="text-xs text-rose-400 flex items-center gap-1">
+              {formData.preferredFood === "পছন্দসই অন্য খাবার" && (
+                <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                    অন্যান্য পছন্দের খাবারের বিবরণ লিখুন <span className="text-amber-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: কাচ্চি বিরিয়ানি সাথে বোরহানি ও ফিরনি"
+                    value={formData.customFood}
+                    onChange={(e) => updateField("customFood", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                  {stepErrors.customFood && (
+                    <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
-                      {stepErrors.mealSchedule}
+                      {stepErrors.customFood}
                     </p>
                   )}
                 </div>
               )}
+            </div>
+          )}
 
-              {/* STEP 5: Reunion Gifts */}
-              {currentStep === 5 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Gift className="w-5 h-5 text-amber-400" />
-                      Step 5: Reunion Gifts
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      What kind of reunion gift would you prefer as a keepsake?
-                    </p>
-                  </div>
+          {/* STEP 4: খাবারের সময়সূচি */}
+          {currentStep === 4 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-amber-500" />
+                  ধাপ ৪: খাবারের সময়সূচি
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  খাবারের পরিবেশন ব্যবস্থা কেমন হওয়া উচিত?
+                </p>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {GIFT_OPTIONS.map((option) => {
-                      const isSelected = formData.preferredGift === option;
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => updateField("preferredGift", option)}
-                          className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[90px] ${
-                            isSelected
-                              ? "bg-amber-400/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-md shadow-amber-400/10"
-                              : "bg-navy-900/60 border-slate-700/70 text-slate-300 hover:border-slate-500 hover:bg-navy-900"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-semibold text-sm">{option}</span>
-                            <div
-                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                isSelected
-                                  ? "border-amber-400 bg-amber-400 text-navy-950"
-                                  : "border-slate-500"
-                              }`}
-                            >
-                              {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                            </div>
-                          </div>
-                          <span className="text-xs text-slate-400 mt-2">
-                            {option === "Customized Gift Box" && "Premium batch branded box with goodies"}
-                            {option === "Only Customized T-shirt" && "High quality signature polo or t-shirt"}
-                            {option === "Custom Gift Preference" && "Suggest your preferred souvenir"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {stepErrors.preferredGift && (
-                    <p className="text-xs text-rose-400 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      {stepErrors.preferredGift}
-                    </p>
-                  )}
-
-                  {/* Conditional Custom Gift Input */}
-                  {formData.preferredGift === "Custom Gift Preference" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-xl bg-navy-900/80 border border-amber-500/20 space-y-2"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {MEAL_SCHEDULE_OPTIONS.map((option) => {
+                  const isSelected = formData.mealSchedule === option;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => updateField("mealSchedule", option)}
+                      className={`p-4 rounded-xl border text-left transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? "bg-amber-500/10 border-amber-500 text-slate-900 dark:text-white font-semibold"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
                     >
-                      <label className="block text-sm font-semibold text-amber-300">
-                        Custom Gift Suggestion <span className="text-amber-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Engraved batch crest, coffee mug, or notebook"
-                        value={formData.customGift}
-                        onChange={(e) => updateField("customGift", e.target.value)}
-                        className={`w-full px-4 py-2.5 rounded-lg bg-navy-950 border text-white placeholder-slate-500 focus:outline-none ${
-                          stepErrors.customGift
-                            ? "border-rose-500"
-                            : "border-slate-700 focus:border-amber-400"
+                      <span className="font-semibold text-sm">{option}</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                          isSelected
+                            ? "border-amber-500 bg-amber-500 text-slate-950"
+                            : "border-slate-400 dark:border-slate-600"
                         }`}
-                      />
-                      {stepErrors.customGift && (
-                        <p className="text-xs text-rose-400 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {stepErrors.customGift}
-                        </p>
-                      )}
-                    </motion.div>
-                  )}
-                </div>
+                      >
+                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {stepErrors.mealSchedule && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {stepErrors.mealSchedule}
+                </p>
               )}
+            </div>
+          )}
 
-              {/* STEP 6: Reunion Activities */}
-              {currentStep === 6 && (
-                <div className="space-y-6">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-amber-400" />
-                        Step 6: Reunion Activities
-                      </h2>
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">
-                        {formData.preferredActivities.length} of 3 selected
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Which 3 activities would you like to see at this reunion? (Select up to 3)
-                    </p>
-                  </div>
+          {/* STEP 5: উপহার পছন্দ */}
+          {currentStep === 5 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Gift className="w-5 h-5 text-amber-500" />
+                  ধাপ ৫: পুনর্মিলনী উপহার
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  স্মৃতিচিহ্ন হিসেবে কী উপহার আপনার পছন্দ?
+                </p>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {ACTIVITY_OPTIONS.map((option) => {
-                      const isSelected = formData.preferredActivities.includes(option);
-                      const isMaxReached =
-                        formData.preferredActivities.length >= 3 && !isSelected;
-
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          disabled={isMaxReached}
-                          onClick={() => togglePreferredActivity(option)}
-                          className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ${
-                            isSelected
-                              ? "bg-amber-400/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-md"
-                              : isMaxReached
-                              ? "bg-navy-950/40 border-slate-800 text-slate-400 cursor-not-allowed opacity-50"
-                              : "bg-navy-900/60 border-slate-700/70 text-slate-300 hover:border-slate-500 hover:bg-navy-900"
-                          }`}
-                        >
-                          <span className="font-medium text-sm">{option}</span>
-                          <div
-                            className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ml-2 ${
-                              isSelected
-                                ? "border-amber-400 bg-amber-400 text-navy-950"
-                                : "border-slate-600"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {stepErrors.preferredActivities && (
-                    <p className="text-xs text-rose-400 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      {stepErrors.preferredActivities}
-                    </p>
-                  )}
-
-                  {/* Conditional Custom Activity Input */}
-                  {formData.preferredActivities.includes("Custom Activity") && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-xl bg-navy-900/80 border border-amber-500/20 space-y-2"
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {GIFT_OPTIONS.map((option) => {
+                  const isSelected = formData.preferredGift === option;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => updateField("preferredGift", option)}
+                      className={`p-3.5 rounded-xl border text-left transition-colors flex items-center justify-between ${
+                        isSelected
+                          ? "bg-amber-500/10 border-amber-500 text-slate-900 dark:text-white font-semibold"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
                     >
-                      <label className="block text-sm font-semibold text-amber-300">
-                        Custom Activity Details <span className="text-amber-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Batch acoustic guitar session, sports match"
-                        value={formData.customPreferredActivity}
-                        onChange={(e) =>
-                          updateField("customPreferredActivity", e.target.value)
-                        }
-                        className={`w-full px-4 py-2.5 rounded-lg bg-navy-950 border text-white placeholder-slate-500 focus:outline-none ${
-                          stepErrors.customPreferredActivity
-                            ? "border-rose-500"
-                            : "border-slate-700 focus:border-amber-400"
+                      <span className="text-xs sm:text-sm">{option}</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                          isSelected
+                            ? "border-amber-500 bg-amber-500 text-slate-950"
+                            : "border-slate-400 dark:border-slate-600"
                         }`}
-                      />
-                      {stepErrors.customPreferredActivity && (
-                        <p className="text-xs text-rose-400 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {stepErrors.customPreferredActivity}
-                        </p>
-                      )}
-                    </motion.div>
-                  )}
-                </div>
+                      >
+                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {stepErrors.preferredGift && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {stepErrors.preferredGift}
+                </p>
               )}
 
-              {/* STEP 7: Previous Reunion Experience */}
-              {currentStep === 7 && (
-                <div className="space-y-6">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-amber-400" />
-                        Step 7: Experiences to Avoid
-                      </h2>
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">
-                        {formData.activitiesToAvoid.length} of 3 selected
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Which 3 experiences from previous reunions would you prefer NOT to repeat this time? (Select up to 3)
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {AVOID_OPTIONS.map((option) => {
-                      const isSelected = formData.activitiesToAvoid.includes(option);
-                      const isMaxReached =
-                        formData.activitiesToAvoid.length >= 3 && !isSelected;
-
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          disabled={isMaxReached}
-                          onClick={() => toggleAvoidActivity(option)}
-                          className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ${
-                            isSelected
-                              ? "bg-amber-400/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-md"
-                              : isMaxReached
-                              ? "bg-navy-950/40 border-slate-800 text-slate-400 cursor-not-allowed opacity-50"
-                              : "bg-navy-900/60 border-slate-700/70 text-slate-300 hover:border-slate-500 hover:bg-navy-900"
-                          }`}
-                        >
-                          <span className="font-medium text-sm">{option}</span>
-                          <div
-                            className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ml-2 ${
-                              isSelected
-                                ? "border-amber-400 bg-amber-400 text-navy-950"
-                                : "border-slate-600"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {stepErrors.activitiesToAvoid && (
-                    <p className="text-xs text-rose-400 flex items-center gap-1">
+              {formData.preferredGift === "পছন্দসই অন্য উপহার" && (
+                <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                    আপনার পছন্দের উপহারের বিবরণ লিখুন <span className="text-amber-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: খোদাইকৃত মেমোরি ক্রেস্ট বা কফি মগ"
+                    value={formData.customGift}
+                    onChange={(e) => updateField("customGift", e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                  {stepErrors.customGift && (
+                    <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
-                      {stepErrors.activitiesToAvoid}
+                      {stepErrors.customGift}
                     </p>
-                  )}
-
-                  {/* Conditional Custom Avoid Input */}
-                  {formData.activitiesToAvoid.includes("Custom Suggestion") && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-xl bg-navy-900/80 border border-amber-500/20 space-y-2"
-                    >
-                      <label className="block text-sm font-semibold text-amber-300">
-                        Custom Pitfall to Avoid <span className="text-amber-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Unorganized seating or late starts"
-                        value={formData.customAvoidActivity}
-                        onChange={(e) =>
-                          updateField("customAvoidActivity", e.target.value)
-                        }
-                        className={`w-full px-4 py-2.5 rounded-lg bg-navy-950 border text-white placeholder-slate-500 focus:outline-none ${
-                          stepErrors.customAvoidActivity
-                            ? "border-rose-500"
-                            : "border-slate-700 focus:border-amber-400"
-                        }`}
-                      />
-                      {stepErrors.customAvoidActivity && (
-                        <p className="text-xs text-rose-400 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {stepErrors.customAvoidActivity}
-                        </p>
-                      )}
-                    </motion.div>
                   )}
                 </div>
               )}
+            </div>
+          )}
 
-              {/* STEP 8: Additional Suggestions & Final Review */}
-              {currentStep === 8 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-amber-400" />
-                      Step 8: Additional Suggestions & Review
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Any additional ideas to make Progoti 21 Reunion more enjoyable and memorable?
+          {/* STEP 6: পছন্দের ৩টি আয়োজন (3 Text Fields) */}
+          {currentStep === 6 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <PenTool className="w-5 h-5 text-amber-500" />
+                  ধাপ ৬: পছন্দের আয়োজন (৩টি অনুষ্ঠান লিখে দিন)
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  আসন্ন পুনর্মিলনীতে আপনি দেখতে চান এমন সর্বোচ্চ ৩টি আয়োজনের নাম নিজের ভাষায় লিখুন।
+                </p>
+              </div>
+
+              <div className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">
+                    পছন্দের আয়োজন ১ <span className="text-amber-600 dark:text-amber-400">* (আবশ্যক)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: বন্ধুদের সাথে আড্ডা ও স্মৃতিচারণ পর্ব"
+                    value={formData.activity1}
+                    onChange={(e) => updateField("activity1", e.target.value)}
+                    className={`w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none ${
+                      stepErrors.activity1
+                        ? "border-rose-500"
+                        : "border-slate-300 dark:border-slate-800 focus:border-amber-500"
+                    }`}
+                  />
+                  {stepErrors.activity1 && (
+                    <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {stepErrors.activity1}
                     </p>
-                  </div>
+                  )}
+                </div>
 
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    পছন্দের আয়োজন ২ <span className="text-slate-500 font-normal">(ঐচ্ছিক)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: গান-বাজনা ও সাংস্কৃতিক অনুষ্ঠান"
+                    value={formData.activity2}
+                    onChange={(e) => updateField("activity2", e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    পছন্দের আয়োজন ৩ <span className="text-slate-500 font-normal">(ঐচ্ছিক)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: মজাদার কুইজ ও খেলাধুলা"
+                    value={formData.activity3}
+                    onChange={(e) => updateField("activity3", e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 7: যা পুনরাবৃত্তি চান না / বর্জনীয় বিষয় (3 Text Fields) */}
+          {currentStep === 7 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Ban className="w-5 h-5 text-rose-500" />
+                  ধাপ ৭: যা পুনরাবৃত্তি চান না (সর্বোচ্চ ৩টি লিখে দিন)
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  পূর্বের পুনর্মিলনীগুলোর কোন বিষয় এবার পরিহার করা উচিত বলে আপনি মনে করেন?
+                </p>
+              </div>
+
+              <div className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    বর্জনীয় বিষয় ১
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: দীর্ঘ আনুষ্ঠানিক বক্তৃতা"
+                    value={formData.avoid1}
+                    onChange={(e) => updateField("avoid1", e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    বর্জনীয় বিষয় ২ <span className="text-slate-500 font-normal">(ঐচ্ছিক)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: খাবার পরিবেশনে অতিরিক্ত দেরি"
+                    value={formData.avoid2}
+                    onChange={(e) => updateField("avoid2", e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    বর্জনীয় বিষয় ৩ <span className="text-slate-500 font-normal">(ঐচ্ছিক)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: অতি গম্ভীর আনুষ্ঠানিক পরিবেশ"
+                    value={formData.avoid3}
+                    onChange={(e) => updateField("avoid3", e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 8: পরামর্শ ও প্রিভিউ */}
+          {currentStep === 8 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-amber-500" />
+                  ধাপ ৮: অতিরিক্ত পরামর্শ ও সারাংশ
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  পুনর্মিলনী নিয়ে আপনার কোনো বিশেষ পরামর্শ থাকলে জানান।
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  আপনার মতামত বা বার্তা <span className="text-slate-500 font-normal">(ঐচ্ছিক)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="আয়োজক কমিটির উদ্দেশ্যে কোনো পরামর্শ থাকলে এখানে লিখতে পারেন..."
+                  value={formData.additionalSuggestions}
+                  onChange={(e) =>
+                    updateField("additionalSuggestions", e.target.value)
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              {/* Summary Card */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                <p className="font-semibold text-amber-600 dark:text-amber-400">
+                  আপনার মতামতের সারসংক্ষেপ:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700 dark:text-slate-300">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-200 mb-2">
-                      Your Thoughts or Special Requests{" "}
-                      <span className="text-slate-400 text-xs font-normal">
-                        (Optional)
-                      </span>
-                    </label>
-                    <textarea
-                      rows={4}
-                      placeholder="Share any special ideas, venue suggestions, or requests with the Progoti 21 organizing committee..."
-                      value={formData.additionalSuggestions}
-                      onChange={(e) =>
-                        updateField("additionalSuggestions", e.target.value)
-                      }
-                      className="w-full px-4 py-3 rounded-xl bg-navy-900/90 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                    />
+                    <span className="text-slate-500">নাম:</span> {formData.fullName || "—"}
                   </div>
-
-                  {/* Summary Review Box */}
-                  <div className="p-4 rounded-xl bg-navy-950/70 border border-amber-500/20 space-y-3 text-xs">
-                    <p className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">
-                      Quick Summary of Your Selections
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300">
-                      <div>
-                        <span className="text-slate-400">Name:</span> {formData.fullName || "—"}
-                      </div>
-                      <div>
-                        <span className="text-slate-400">Mobile:</span> {formData.mobileNumber || "—"}
-                      </div>
-                      <div>
-                        <span className="text-slate-400">Date:</span>{" "}
-                        {formData.preferredDate === "Custom Date"
-                          ? `Custom: ${formData.customDate}`
-                          : formData.preferredDate || "—"}
-                      </div>
-                      <div>
-                        <span className="text-slate-400">Menu:</span>{" "}
-                        {formData.preferredFood === "Custom Food Preference"
-                          ? `Custom: ${formData.customFood}`
-                          : formData.preferredFood || "—"}
-                      </div>
-                      <div>
-                        <span className="text-slate-400">Schedule:</span>{" "}
-                        {formData.mealSchedule || "—"}
-                      </div>
-                      <div>
-                        <span className="text-slate-400">Gift:</span>{" "}
-                        {formData.preferredGift === "Custom Gift Preference"
-                          ? `Custom: ${formData.customGift}`
-                          : formData.preferredGift || "—"}
-                      </div>
-                      <div className="sm:col-span-2">
-                        <span className="text-slate-400">Top Activities:</span>{" "}
-                        {formData.preferredActivities.length > 0
-                          ? formData.preferredActivities.join(", ")
-                          : "None"}
-                      </div>
-                      <div className="sm:col-span-2">
-                        <span className="text-slate-400">Avoid:</span>{" "}
-                        {formData.activitiesToAvoid.length > 0
-                          ? formData.activitiesToAvoid.join(", ")
-                          : "None"}
-                      </div>
-                    </div>
+                  <div>
+                    <span className="text-slate-500">মোবাইল:</span> {formData.mobileNumber || "—"}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">তারিখ:</span>{" "}
+                    {formData.preferredDate === "পছন্দসই কাস্টম তারিখ"
+                      ? `কাস্টম: ${formData.customDate}`
+                      : formData.preferredDate || "—"}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">খাবার:</span>{" "}
+                    {formData.preferredFood === "পছন্দসই অন্য খাবার"
+                      ? `কাস্টম: ${formData.customFood}`
+                      : formData.preferredFood || "—"}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">সময়সূচি:</span>{" "}
+                    {formData.mealSchedule || "—"}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">উপহার:</span>{" "}
+                    {formData.preferredGift === "পছন্দসই অন্য উপহার"
+                      ? `কাস্টম: ${formData.customGift}`
+                      : formData.preferredGift || "—"}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <span className="text-slate-500">পছন্দের আয়োজন:</span>{" "}
+                    {[formData.activity1, formData.activity2, formData.activity3]
+                      .filter(Boolean)
+                      .join(", ") || "—"}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <span className="text-slate-500">বর্জনীয় বিষয়:</span>{" "}
+                    {[formData.avoid1, formData.avoid2, formData.avoid3]
+                      .filter(Boolean)
+                      .join(", ") || "নির্দিষ্ট করা হয়নি"}
                   </div>
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              </div>
+            </div>
+          )}
 
-          {/* Navigation Buttons */}
-          <div className="mt-8 pt-6 border-t border-slate-800/80 flex items-center justify-between gap-3">
+          {/* Action Buttons */}
+          <div className="mt-8 pt-5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
             {currentStep > 1 ? (
               <button
                 type="button"
                 onClick={handleBack}
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-navy-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>পূর্ববর্তী</span>
               </button>
             ) : (
               <div />
@@ -1085,26 +927,26 @@ export default function SurveyPage() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-400 to-amber-500 text-navy-950 hover:from-amber-300 hover:to-amber-400 shadow-md shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-slate-950 transition-colors"
               >
-                <span>Continue</span>
+                <span>পরবর্তী ধাপ</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl font-extrabold text-sm bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-navy-950 hover:brightness-110 shadow-lg shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Saving to Database...</span>
+                    <span>জমা হচ্ছে...</span>
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Submit My Response</span>
+                    <span>মতামত জমা দিন</span>
                   </>
                 )}
               </button>

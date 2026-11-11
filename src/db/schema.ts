@@ -21,3 +21,4 @@ export const reunionSubmissions = pgTable("reunion_submissions", {
 
 export type ReunionSubmission = typeof reunionSubmissions.$inferSelect;
 export type NewReunionSubmission = typeof reunionSubmissions.$inferInsert;
+

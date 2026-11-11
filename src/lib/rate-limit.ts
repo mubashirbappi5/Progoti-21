@@ -52,3 +52,4 @@ export function checkRateLimit(
     resetAt: entry.resetAt,
   };
 }
+

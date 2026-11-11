@@ -4,17 +4,22 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "PROGOTI 21 – Eid-ul-Fitr Reunion Survey 2027",
+  title: "প্রগতি ২১ – ঈদুল ফিতর পুনর্মিলনী জরিপ ২০২৭",
   description:
-    "Let's make our reunion memorable! Share your preferences for the Progoti 21 Eid-ul-Fitr Reunion 2027.",
+    "আসুন আমাদের পুনর্মিলনীকে স্মরণীয় করে তুলি! প্রগতি ২১ ব্যাচের ঈদুল ফিতর পুনর্মিলনী ২০২৭ এর জরিপে আপনার মতামত দিন।",
   keywords: [
+    "প্রগতি ২১",
     "Progoti 21",
-    "Eid Reunion",
-    "Reunion Survey",
-    "Progoti 21 Survey",
-    "Batch 21 Reunion 2027",
+    "ঈদ পুনর্মিলনী",
+    "Eid Reunion 2027",
+    "প্রগতি ২১ জরিপ",
+    "ব্যাচ ২১ পুনর্মিলনী",
   ],
-  authors: [{ name: "Progoti 21 Committee" }],
+  authors: [{ name: "প্রগতি ২১ পুনর্মিলনী কমিটি" }],
+  icons: {
+    icon: "/images/logo.jpg",
+    apple: "/images/logo.jpg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,8 +34,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
-      <body className="min-h-screen flex flex-col bg-navy-950 text-slate-100 selection:bg-amber-500 selection:text-navy-950">
+    <html lang="bn" suppressHydrationWarning className="dark scroll-smooth">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var t = localStorage.getItem('progoti_theme');
+                if (t === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {
+                document.documentElement.classList.add('dark');
+              }
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased">
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
         <Footer />

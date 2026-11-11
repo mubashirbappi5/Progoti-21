@@ -11,13 +11,13 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md transition-colors shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
         {/* Brand Logo & Name */}
         <Link
           href="/"
-          className="flex items-center gap-3 group transition-transform duration-200 hover:scale-[1.01]"
+          className="flex items-center gap-2.5 sm:gap-3 group shrink-0 transition-transform duration-200 hover:scale-[1.01]"
         >
-          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-slate-300 bg-white p-0.5 shadow-sm">
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-slate-300 bg-white p-0.5 shadow-sm shrink-0">
             <Image
               src="/images/logo.jpg"
               alt="প্রগতি ২১ লোগো"
@@ -26,7 +26,9 @@ export default function Navbar() {
               priority
             />
           </div>
-          <div className="flex flex-col">
+          
+          {/* Brand text - Hidden on mobile as requested to prevent button wrap */}
+          <div className="hidden sm:flex flex-col">
             <span className="font-bold text-xl sm:text-2xl tracking-wide text-slate-900 group-hover:text-amber-600 transition-colors flex items-center gap-1.5">
               প্রগতি <span className="text-amber-500">২১</span>
             </span>
@@ -37,11 +39,11 @@ export default function Navbar() {
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <nav className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/"
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 pathname === "/"
                   ? "text-amber-700 bg-amber-500/10 border border-amber-500/20 font-semibold"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -52,34 +54,34 @@ export default function Navbar() {
 
             <Link
               href="/#gallery"
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 whitespace-nowrap transition-colors"
             >
-              <ImageIcon className="w-4 h-4 text-amber-500" />
+              <ImageIcon className="w-4 h-4 text-amber-500 shrink-0" />
               <span>স্মৃতি অ্যালবাম</span>
             </Link>
 
             <Link
               href="/survey"
-              className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap shrink-0 transition-all ${
                 pathname.startsWith("/survey")
                   ? "bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm"
                   : "bg-amber-500/15 text-amber-700 border border-amber-500/30 hover:bg-amber-500/25"
               }`}
             >
-              <ClipboardEdit className="w-4 h-4" />
-              <span>মতামত দিন</span>
+              <ClipboardEdit className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">মতামত দিন</span>
             </Link>
 
             <Link
               href="/admin/dashboard"
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 isAdmin
                   ? "text-amber-700 bg-amber-500/10 border border-amber-500/30 font-semibold"
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               }`}
               title="অ্যাডমিন প্যানেল"
             >
-              <ShieldCheck className="w-4 h-4 text-amber-500" />
+              <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
               <span className="hidden sm:inline">অ্যাডমিন</span>
             </Link>
           </nav>
